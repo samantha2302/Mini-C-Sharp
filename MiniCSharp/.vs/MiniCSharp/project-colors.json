@@ -1,0 +1,21 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3": {
+      "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
+      "DisplayName": "Archivos varios",
+      "ColorIndex": -1
+    },
+    "142bc271-45d3-439e-a7f6-c1c6d03d5559": {
+      "ProjectGuid": "142bc271-45d3-439e-a7f6-c1c6d03d5559",
+      "DisplayName": "MiniCSharp",
+      "ColorIndex": 0
+    },
+    "dbeb0bd8-e943-4103-bc00-2758c141c891": {
+      "ProjectGuid": "dbeb0bd8-e943-4103-bc00-2758c141c891",
+      "DisplayName": "Solution Items",
+      "ColorIndex": 1
+    }
+  },
+  "NextColorIndex": 2
+}

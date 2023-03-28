@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ANTLRGenerationPreferences">
+    <option name="perGrammarGenerationSettings">
+      <list>
+        <PerGrammarGenerationSettings>
+          <option name="fileName" value="$PROJECT_DIR$/ANTLR4/Scanner.g4" />
+          <option name="autoGen" value="true" />
+          <option name="outputDir" value="C:\Users\playa\Desktop\Proyecto\MiniCSharp\ANTLR4" />
+          <option name="libDir" value="" />
+          <option name="encoding" value="" />
+          <option name="pkg" value="generated" />
+          <option name="language" value="CSharp" />
+          <option name="generateListener" value="false" />
+        </PerGrammarGenerationSettings>
+        <PerGrammarGenerationSettings>
+          <option name="fileName" value="$PROJECT_DIR$/ANTLR4/AlphaParser.g4" />
+          <option name="autoGen" value="true" />
+          <option name="outputDir" value="C:\Users\playa\Desktop\Proyecto\MiniCSharp\ANTLR4" />
+          <option name="libDir" value="" />
+          <option name="encoding" value="" />
+          <option name="pkg" value="generated" />
+          <option name="language" value="CSharp" />
+          <option name="generateListener" value="false" />
+        </PerGrammarGenerationSettings>
+        <PerGrammarGenerationSettings>
+          <option name="fileName" value="$PROJECT_DIR$/ANTLR4/MiniCSharpParser.g4" />
+          <option name="autoGen" value="true" />
+          <option name="outputDir" value="C:\Users\playa\Desktop\Proyecto\MiniCSharp\ANTLR4" />
+          <option name="libDir" value="" />
+          <option name="encoding" value="" />
+          <option name="pkg" value="generated" />
+          <option name="language" value="CSharp" />
+          <option name="generateListener" value="false" />
+        </PerGrammarGenerationSettings>
+      </list>
+    </option>
+  </component>
+</project>
