@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generated from C:/Users/playa/Desktop/Proyecto/MiniCSharp/ANTLR4\MiniCSharpParser.g4 by ANTLR 4.11.1
+// Generated from C:/Users/playa/Desktop/Proyecto/Mini-C-Sharp/MiniCSharp/ANTLR4\MiniCSharpParser.g4 by ANTLR 4.11.1
 
 // Unreachable code detected
 #pragma warning disable 0162

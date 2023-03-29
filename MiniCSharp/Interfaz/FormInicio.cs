@@ -1,12 +1,6 @@
-/*
- Copyright 2021 Fusen
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, 
-including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+//Todos los metodos de esta clase fueron declarados para manejar ciertas funciones integradas dentro del editor grafico,
+//son necesarios para que funcione correctamente, fue creado por Fus3n: https://github.com/Fus3n/cnote
+//Ademas, aqui se implemento la logica que utilizara ANTLR4 para manejar archivos de texto ingresados por el usuario y se puedan compilar.
 using ColorsNew;
 using FastColoredTextBoxNS;
 using System;
@@ -25,10 +19,7 @@ namespace CNote
 
     public partial class NoteMain : Form
     {
-
-        //total all files 1775 lines
-
-        private bool TextChangedFCTB; //check if text changed used to add * in the title 
+        private bool TextChangedFCTB;
         private bool isOpenFirstTime = false;
         CNoteUtils util;
         private string currFileName;
@@ -37,6 +28,8 @@ namespace CNote
         
 
         private Keys lastkeycode;
+
+        //Algunos metodos que cargaran antes de iniciar el programa.
         public NoteMain()
         {
             InitializeComponent();
@@ -46,12 +39,14 @@ namespace CNote
             SplitContainer.Panel2Collapsed = false;
         }
 
+        //Metodo para remover cosas del editor grafico.
         public string[] removeDup(string[] arr)
         {
             string[] q = arr.Distinct().ToArray();
 
             return q;
         }
+        //Algunos metodos que cargaran cuando se arranca el programa.
         private void NoteMain_Load(object sender, EventArgs e)
         {
             util.cshapr_items = removeDup(util.cshapr_items);
@@ -74,7 +69,7 @@ namespace CNote
             InitSettings();
         }
 
-        //init some settings
+        //Metodo para cargar configuracion visual del programa.
         private void InitSettings()
         {
             string pyPath = util.GetPythonPath();
@@ -102,7 +97,7 @@ namespace CNote
             
         }
 
-        //Create New File
+        //Metodo para crear un nuevo archivo.
         private void new_tools_Click(object sender, EventArgs e)
         {
             fctb_main.Clear();
@@ -112,7 +107,7 @@ namespace CNote
             Text = currFileName + " - MiniCSharp";
         }
 
-        //Open File Dialog Depen
+        //Metodo para buscar un archivo dentro de la computadora.
         private void OpenDlg()
         {
             System.Windows.Forms.OpenFileDialog of = new System.Windows.Forms.OpenFileDialog();
@@ -133,6 +128,7 @@ namespace CNote
             }
         }
 
+        //Metodo para cargar archivos.
         private void FileSetup()
         {
             isOpenFirstTime = true;
@@ -140,11 +136,10 @@ namespace CNote
             this.Text = currFileName + " - MiniCSharp";
 
             fctb_main.SelectionStart = 1;
-            //SaveFileAll();
         }
 
 
-        //opens files....
+        //Metodo para abrir archivos.
         private void FileOpener(string filename)
         {
             try
@@ -161,13 +156,12 @@ namespace CNote
             }
             catch
             {
-                //pass
             }
 
         }
 
 
-        //reads files......maybe?
+        //Metodo para leer archivos de texto.
         private string FileReader(string path)
         {
             StreamReader sr = new StreamReader(path);
@@ -178,7 +172,7 @@ namespace CNote
 
 
 
-        //opens new file 
+        //Se abre un nuevo archivo desde el menu.
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (TextChangedFCTB && !string.IsNullOrEmpty(fctb_main.Text))
@@ -206,13 +200,13 @@ namespace CNote
         }
 
 
-        //saves file :)
+        //Se guarda un archivo desde el menu.
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SaveFileAll();
         }
 
-        //function to save all file if cant then open save file dialog
+        //Metodo para guardar archivos si no se puede.
         private void SaveFileAll()
         {
             try
@@ -228,7 +222,7 @@ namespace CNote
         }
 
 
-        //yup and this one writes files
+        //Metodo para escribir en los archivos.
         void FileWriter()
         {
             try
@@ -244,7 +238,7 @@ namespace CNote
         }
 
 
-        //SaveDlg
+        //Metodo para guardar un archivo buscando donde en la computadora.
         private void SaveDlg()
         {
             System.Windows.Forms.SaveFileDialog of = new System.Windows.Forms.SaveFileDialog();
@@ -264,7 +258,7 @@ namespace CNote
         }
 
 
-        //saves as file dialog
+        //Se guarda un archivo desde el menu.
         private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SaveDlg();
@@ -272,55 +266,57 @@ namespace CNote
         }
 
 
-        //exit..
+        //Se sale del programa desde el menu.
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.Close();
         }
 
-        //uh
+        //Cortar texto desde el menu.
         private void cutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             fctb_main.Cut();
         }
 
-        //hm
+        //Copiar texto desde el menu.
         private void copyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             fctb_main.Copy();
         }
 
-        //yea 
+        //Pegar texto desde el menu.
         private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
         {
             fctb_main.Paste();
         }
 
-        //about that..
+        //Deshacer texto desde el menu.
         private void undoToolStripMenuItem_Click(object sender, EventArgs e)
         {
             fctb_main.Undo();
         }
 
-        // redo
+        //Rehacer texto desde el menu.
         private void redoToolStripMenuItem_Click(object sender, EventArgs e)
         {
             fctb_main.Redo();
         }
 
 
-        //Theme Options
+        //Opciones del tema del programa desde el menu.
 
         private void lightm_toggle_Click(object sender, EventArgs e)
         {
             LightMode();
         }
 
+        //Opciones del tema del programa desde el menu.
         private void darkm_toggle_Click(object sender, EventArgs e)
         {
             DarkMode();
         }
 
+        //Metodo para que el programa este en modo claro.
         private void LightMode()
         {
             lightm_toggle.Checked = true;
@@ -362,6 +358,7 @@ namespace CNote
 
         }
 
+        //Metodo para que el programa este en modo oscuro.
         private void DarkMode()
         {
 
@@ -407,46 +404,50 @@ namespace CNote
             util.AOUSettings("theme", "dark");
         }
 
-        //temporary font selection
+        //Opciones de la fuente del programa desde el menu.
         private void fontToolStripMenuItem_Click(object sender, EventArgs e)
         {
             FontDialog fd = new FontDialog();
             if (fd.ShowDialog() == DialogResult.OK)
             {
-                fctb_main.Font = fd.Font;//change current font and size
+                fctb_main.Font = fd.Font;
 
             }
         }
 
 
-        //Context Menu Items
+        //Seleccionar todo el texto desde el menu.
         private void selectAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
             fctb_main.SelectAll();
         }
 
+        //Cortar texto desde el menu.
         private void cutToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             fctb_main.Cut();
 
         }
 
+        //Copiar texto desde el menu.
         private void copyToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             fctb_main.Copy();
         }
 
+        //Pegar texto desde el menu.
         private void pasteToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             fctb_main.Paste();
         }
 
-        //Get basic info for statusStrip
+        //Metodo para obtener informacion del cursor respecto a la linea, columna y zoom.
         private string GetEditInfo()
         {
             return $"Linea: {fctb_main.Selection.End.iLine +1} Columna: {fctb_main.Selection.End.iChar + 1} Zoom {fctb_main.Zoom}";
         }
 
+        //Metodo para llamar la logica de la compilacion de ANTLR4
         public void antlr4Start()
         {
 
@@ -460,7 +461,6 @@ namespace CNote
             IParseTree tree;
             try
             {
-                //string inputFilePath = @"..\..\..\MiniCSharp\ANTLR4\test.txt";
                 string inputFilePath = currFilePath;
                 string txt = File.ReadAllText(inputFilePath);
                 AntlrInputStream inputStream = new AntlrInputStream(txt);
@@ -480,11 +480,9 @@ namespace CNote
                 tree = parser.program();
                 TreeView treeView = new TreeView();
 
-                // Configuramos el TreeView
                 treeView.Dock = DockStyle.Fill;
                 treeView.Font = new System.Drawing.Font("Consolas", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 
-                // Convertimos el árbol de análisis en un árbol de nodos del TreeView
                 TreeNode rootNode = GenerateTreeNode(tree, parser);
                 treeView.Nodes.Add(rootNode);
 
@@ -521,6 +519,7 @@ namespace CNote
 
         }
 
+        //Metodo que tiene la logica para compilar.
         public void compilarStart()
         {
             if (string.IsNullOrEmpty(currFilePath) && !string.IsNullOrEmpty(fctb_main.Text))
@@ -543,7 +542,7 @@ namespace CNote
         }
 
 
-        //Run File is Runnable
+        //Compilar desde el menu.
         private void run_tools_Click_1(object sender, EventArgs e)
         {
             stat_txt.Text = GetEditInfo();
@@ -552,20 +551,17 @@ namespace CNote
 
         }
         
-        // Convierte un IParseTree en un TreeNode para ser mostrado en un TreeView
+        //Metodo que convierte un IParseTree en un TreeNode para ser mostrado en un TreeView
         private TreeNode GenerateTreeNode(IParseTree parseTree, Parser parser)
         {
             if (parseTree is TerminalNodeImpl terminal)
             {
-                // Si es un nodo terminal, creamos un nuevo TreeNode con el nombre del token
                 return new TreeNode($"{parser.Vocabulary.GetSymbolicName(terminal.Symbol.Type)}: {terminal.Symbol.Text}");
             }
             else
             {
-                // Si es un nodo no terminal, creamos un nuevo TreeNode con el nombre de la regla
                 TreeNode node = new TreeNode(parser.RuleNames[((ParserRuleContext)parseTree).RuleIndex]);
 
-                // Para cada hijo, generamos un nuevo TreeNode y lo agregamos como hijo del nodo actual
                 for (int i = 0; i < parseTree.ChildCount; i++)
                 {
                     node.Nodes.Add(GenerateTreeNode(parseTree.GetChild(i), parser));
@@ -575,23 +571,20 @@ namespace CNote
             }
         }
 
-        //Run Other Files
-
-        // Get Info in StatusTool
+        //Obtener datos del cursor en el inicio
         private void fctb_main_Click(object sender, EventArgs e)
         {
             stat_txt.Text = GetEditInfo();
         }
 
-
+        //Verificar cuando se modifique el texto en el editor grafico.
         private void fctb_main_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (fctb_main.IsChanged)
             {
-                // put '*' in title if file not saved after change
 
                 TextChangedFCTB = true;
-                if (string.IsNullOrEmpty(currFilePath)) //check if file is saved or opend if not then adds untitled
+                if (string.IsNullOrEmpty(currFilePath))
                 {
                     if (string.IsNullOrEmpty(currFileName))
                     {
@@ -607,42 +600,44 @@ namespace CNote
                 }
                 else
                 {
-                    this.Text = "*" + currFileName + " - MiniCSharp"; //if opened add * before filename
+                    this.Text = "*" + currFileName + " - MiniCSharp";
                 }
 
             }
             else
             {
-                this.Text = currFileName + " - MiniCSharp"; //if already saved add normal title
+                this.Text = currFileName + " - MiniCSharp";
             }
 
         }
 
-        //save zoom value on zoom change
+        //Modificar el zoom desde el menu.
         private void fctb_main_ZoomChanged(object sender, EventArgs e)
         {
             stat_txt.Text = GetEditInfo();
             util.AOUSettings("zoom", $"{fctb_main.Zoom}");
         }
 
+        //Mostrar ventana de depuracion.
         private void cmdoutHide_Click(object sender, EventArgs e)
         {
             SplitContainer.Panel2Collapsed = true;
         }
 
+        //Seleccionar todo desde el menu.
         private void cmdoutSelectAll_Click(object sender, EventArgs e)
         {
             cmdout.SelectAll();
         }
 
-        //Show Cmd output panel
+        //Seleccionar la ventana de depuracion desde el menu.
         private void showOutPanel_Click(object sender, EventArgs e)
         {
             SplitContainer.Panel2Collapsed = SplitContainer.Panel2Collapsed == true ? false : true;
         }
 
 
-        //Drag files 
+        //Mover archivos al editor grafico.
         private void fctb_main_DragDrop(object sender, DragEventArgs e)
         {
             var data = e.Data.GetData(DataFormats.FileDrop);
@@ -662,13 +657,14 @@ namespace CNote
             }
         }
 
+        //Mover archivos al editor grafico.
         private void fctb_main_DragEnter(object sender, DragEventArgs e)
         {
             e.Effect = DragDropEffects.Copy;
         }
 
 
-        // save dialog if any contenet has changed without saving
+        //Verificar si se quiere guardar la informacion en un archivo si no lo hizo anteriormente.
         private void NoteMain_FormClosing(object sender, FormClosingEventArgs e)
         {
 
@@ -690,7 +686,7 @@ namespace CNote
         }
 
 
-        //reset zoom and save it
+        //Reiniciar zoom desde el menu.
         private void zoomToolStripMenuItem_Click(object sender, EventArgs e)
         {
             fctb_main.Zoom = 122;
@@ -698,33 +694,38 @@ namespace CNote
 
         }
 
+        //Limpiar texto desde el menu.
         private void cmdout_clear_Click(object sender, EventArgs e)
         {
             cmdout.Clear();
         }
 
+        //Pegar texto desde el menu.
         private void cmdout_paste_Click(object sender, EventArgs e)
         {
             cmdout.Paste();
         }
 
+        //Copiar texto desde el menu.
         private void cmdout_cpy_Click(object sender, EventArgs e)
         {
             cmdout.Copy();
         }
 
+        //Deshacer texto desde el menu.
         private void undoToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             fctb_main.Undo();
         }
 
 
-        //Auto indent for Python and info
+        //Verificar la posicion del cursor cuando se escribe.
         private void fctb_main_KeyPressed(object sender, KeyPressEventArgs e)
         {
             stat_txt.Text = GetEditInfo();
         }
 
+        //Verificar la posicion del cursor cuando se mueve con las flechas del teclado.
         private void fctb_main_KeyUp(object sender, KeyEventArgs e)
         {
             lastkeycode = e.KeyCode;
@@ -744,11 +745,13 @@ namespace CNote
         {
         }
 
+        //Compilar desde el menu.
         private void compilarToolStripMenuItem_Click(object sender, EventArgs e)
         {
             compilarStart();
         }
 
+        //Rehacer texto desde el menu.
         private void rehacerToolStripMenuItem_Click(object sender, EventArgs e)
         {
             fctb_main.Redo();

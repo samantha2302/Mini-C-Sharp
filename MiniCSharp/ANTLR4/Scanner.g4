@@ -5,6 +5,8 @@ lexer grammar Scanner;
 			    this.ErrorListenerDispatch.SyntaxError(this.ErrorOutput, (IRecognizer) this, 0, TokenStartLine, this.TokenStartColumn, "reconocimiento de token : '" + this.GetErrorDisplay(this.EmitEOF().InputStream.GetText(Interval.Of(this.TokenStartCharIndex, this.InputStream.Index)))  + "'", (RecognitionException) e);
 			   }
 }
+// El @lexer::members sobreescribe el metodo NotifyListeners de la clase Lexer de ANTLR4, se vuelve Override 
+//y se traduce la descripcion del error del Scanner.
 
 // Palabras reservadas
 CLASS: 'class';

@@ -1,4 +1,8 @@
-﻿using System;
+﻿//Esta clase maneja los errores del Parser de ANTLR4, pero, especificamente la descripcion del error, se utiliza una clase
+//de ANTLR4 llamada: DefaultErrorStrategy.
+//Basicamente, esta clase sobreescribe la original (copiar y pegar), algunos metodos se vuelven Override y se traducen los errores.
+
+using System;
 using System.Windows.Forms;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Atn;

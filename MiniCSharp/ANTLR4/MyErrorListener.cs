@@ -1,4 +1,8 @@
-﻿using System;
+﻿//Esta clase maneja los errores del Parser de ANTLR4, pero, solo especificamente el texto que viene antes de la descripcion del error, basicamente
+//muestra la linea, columna y el mensaje de error, esto se logra agregando los errores en una lista para luego imprimirlos, se utiliza una clase
+//de ANTLR4 llamada: BaseErrorListener.
+
+using System;
 using System.IO;
 using System.Text;
 using System.Windows.Forms;
