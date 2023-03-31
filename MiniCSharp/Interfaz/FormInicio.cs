@@ -100,11 +100,36 @@ namespace CNote
         //Metodo para crear un nuevo archivo.
         private void new_tools_Click(object sender, EventArgs e)
         {
-            fctb_main.Clear();
-            currFileName = "Desconocido";
-            currFilePath = "";
-            TextChangedFCTB = false;
-            Text = currFileName + " - MiniCSharp";
+
+            if (TextChangedFCTB && !string.IsNullOrEmpty(fctb_main.Text))
+            {
+                if (TextChangedFCTB && !string.IsNullOrEmpty(fctb_main.Text))
+                {
+                    DialogResult res = MessageBox.Show($"Quieres guardar los cambios en el archivo {currFileName}?", "MiniCSharp", MessageBoxButtons.YesNoCancel);
+                    if (res == DialogResult.No)
+                    {
+                        fctb_main.Clear();
+                        currFileName = "Desconocido";
+                        currFilePath = "";
+                        TextChangedFCTB = false;
+                        Text = currFileName + " - MiniCSharp";
+                    }
+                    else if (res == DialogResult.Yes)
+                    {
+                        SaveFileAll();
+                    }
+
+                }
+            }
+            else
+            {
+                fctb_main.Clear();
+                currFileName = "Desconocido";
+                currFilePath = "";
+                TextChangedFCTB = false;
+                Text = currFileName + " - MiniCSharp";
+            }
+
         }
 
         //Metodo para buscar un archivo dentro de la computadora.
