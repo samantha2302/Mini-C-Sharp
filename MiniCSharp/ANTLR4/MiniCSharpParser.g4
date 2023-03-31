@@ -1,7 +1,7 @@
 parser grammar MiniCSharpParser;
 
 options {
-    tokenVocab=Scanner;
+    tokenVocab = Scanner;
 }
 
 // Regla inicial del programa

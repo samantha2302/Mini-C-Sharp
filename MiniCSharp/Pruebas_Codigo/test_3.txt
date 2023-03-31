@@ -1,35 +1,19 @@
-using otraClase;
+using otraClase; 
 
-class P
+class Numeros
 {
-	class Table {
-		int[] pos;
-		int[] neg;
-	}
-	
-	Table val;
   void Main ()
-	{
-		int x, i;
-	
-		//---------- Initialize val ----------
-		val = new Table;
-		val.pos = new int[]; val.neg = new int[size];
-		i = (int)0.0;
-		while (i < size) {
-			//add(val.pos,0); 
-			val.neg[i] = 0;
-			i++;	
-		}
+    {
+     int num1, num2, num3;
+     num1 = 1.0;
+     num2 = 2.5;
+     
+     if (num1 == num2)read(num1);
+        
+     else if (num1 > num2) read(num2);
+     
+     else num3 = num1 + num2;
 
-		/*---------- Read /*values*/---------- */
-		read(x);
-		while (-size < x && x < size) {
-			if (0 <= x) val.pos[x]++;
-			else val.neg[-x]++;
-			read(x);
-	write("Valor de x: "); write(x,2);
-		}
-	}
+    }
 }
 
