@@ -23,7 +23,7 @@ NEW: 'new';
 TRUE: 'true';
 FALSE: 'false';
 USING: 'using';
-LIST : 'List';
+LIST : 'list';
 
 // Operadores
 PLUS: '+';
@@ -62,7 +62,7 @@ NUMBER : [0-9]+;
 DOUBLE_CONST: NUMBER ('.' NUMBER)? EXPONENT? [fF]?;
 fragment EXPONENT: [+-]? NUMBER;
 
-CHAR_CONSTANT: '\'' (ESCAPE_SEQUENCE | ~['\\])* '\'';
+CHAR_CONSTANT: '\'' (ESCAPE_SEQUENCE | ~['\\]) '\'';
 
 STRING_CONSTANT : '"' ( ESCAPE_SEQUENCE | ~["\\] )* '"';
 

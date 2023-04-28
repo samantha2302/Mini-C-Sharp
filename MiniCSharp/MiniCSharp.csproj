@@ -83,11 +83,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ANTLR4\AContextual.cs" />
     <Compile Include="ANTLR4\generated\MiniCSharpParser.cs" />
+    <Compile Include="ANTLR4\generated\MiniCSharpParserBaseVisitor.cs" />
+    <Compile Include="ANTLR4\generated\MiniCSharpParserVisitor.cs" />
     <Compile Include="ANTLR4\generated\Scanner.cs" />
     <Compile Include="ANTLR4\MyDefaultErrorStrategy.cs" />
     <Compile Include="ANTLR4\MyErrorListener.cs" />
     <Compile Include="ANTLR4\MySyntaxErrorListener.cs" />
+    <Compile Include="ANTLR4\TablaSimbolos.cs" />
     <Compile Include="Interfaz\ColoresFormInicio.cs" />
     <Compile Include="Interfaz\FormInicio.cs">
       <SubType>Form</SubType>
@@ -101,6 +105,12 @@
     <Compile Include="Interfaz\FormTabs.Designer.cs">
       <DependentUpon>FormTabs.cs</DependentUpon>
     </Compile>
+    <Compile Include="Prueba\Prueba.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Prueba\Prueba.Designer.cs">
+      <DependentUpon>Prueba.cs</DependentUpon>
+    </Compile>
     <Compile Include="Interfaz\UtilidadesFormInicio.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -109,6 +119,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Interfaz\FormTabs.resx">
       <DependentUpon>FormTabs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Prueba\Prueba.resx">
+      <DependentUpon>Prueba.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -144,6 +157,7 @@
     <Content Include="Pruebas_Codigo\test_3.txt" />
     <Content Include="Pruebas_Codigo\test_2.txt" />
     <Content Include="Pruebas_Codigo\test_1.txt" />
+    <Content Include="Prueba\Prueba.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
