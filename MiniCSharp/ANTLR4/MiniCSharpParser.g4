@@ -19,15 +19,15 @@ classDecl: CLASS IDENTIFIER LBRACE varDecl* RBRACE                              
 // Regla para declaración de método
 methodDecl: (type | VOID) IDENTIFIER LPAREN (formPars)? RPAREN block                               #methodDeclAST;
 
-// Regla para parámetros de método
+// Regla para parámetros de método (MODIFICADO)
 formPars: type IDENTIFIER (COMMA type IDENTIFIER)*                                                 #formParsAST;
 
 // Regla para tipos de dato
-type: IDENTIFIER (LBRACK RBRACK)?                                                                  #typeAST;
+type: IDENTIFIER (LESS_THAN type GREATER_THAN)?  (LBRACK RBRACK)?                                  #typeAST;
 
 // Regla para una instrucción
 statement: designator (ASSIGN expr | LPAREN (actPars)? RPAREN | INCREMENT | DECREMENT) SEMICOLON   #designatorStatementAST
-         | IF LPAREN condition RPAREN statement (ELSE statement)? #ifStatementAST
+         | IF LPAREN condition RPAREN statement (ELSE statement)?                                  #ifStatementAST
          | FOR LPAREN expr SEMICOLON (condition)? SEMICOLON (statement)? RPAREN statement          #forStatementAST
          | WHILE LPAREN condition RPAREN statement                                                 #whileStatementAST
          | BREAK SEMICOLON                                                                         #breakStatementAST

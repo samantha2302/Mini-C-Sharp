@@ -23,7 +23,20 @@ NEW: 'new';
 TRUE: 'true';
 FALSE: 'false';
 USING: 'using';
-LIST : 'list';
+
+// Tipos
+//INT: 'int';
+//INTQ: 'int?';
+//DOUBLE: 'double';
+//DOUBLEQ: 'double?';
+//CHAR: 'char';
+//CHARQ: 'char?';
+//STRING: 'string';
+//STRINGQ: 'string?';
+//BOOL: 'bool';
+//BOOLQ: 'bool?';
+//LIST : 'list';
+
 
 // Operadores
 PLUS: '+';

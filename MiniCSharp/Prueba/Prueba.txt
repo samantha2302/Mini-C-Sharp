@@ -1,4 +1,5 @@
 using otraClase;
+using otraClase1;
 
 class P
 {
@@ -7,28 +8,32 @@ class P
         int[] neg;
     }
     
-    Table val;
+    class Table {
+        int[] pos;
+        int[] neg;
+    }
+     //int x, i;
+     int [] x;
+     int [] p;
+     
+   int prueba (int x)
+     {
+        int x;
+     }
   void Main ()
     {
         int x, i;
     
         //---------- Initialize val ----------
         val     = new Table;
-        val.pos = new int[]; 
-        val.neg = new int[size];
         i       = (int)0.0;
         while (i < size) {
             //add(val.pos,0); 
             val.neg[i] = 0;
-            i+;    // Falta un +
-            x + 1; // Tiene que ir dentro de una variable 
         }
-
-        /*---------- Read /*values*/---------- */
         read(x);
         while (-size < x && x < size) {
             if (0 <= x) val.pos[x]++;
-            else val.neg[-x]+; // Falta un +
             read(x);
     write("Valor de x: "); write(x,2);
         }

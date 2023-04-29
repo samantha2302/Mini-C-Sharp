@@ -105,6 +105,7 @@
     <Compile Include="Interfaz\FormTabs.Designer.cs">
       <DependentUpon>FormTabs.cs</DependentUpon>
     </Compile>
+    <Compile Include="Prueba\MiClasePrueba.cs" />
     <Compile Include="Prueba\Prueba.cs">
       <SubType>Form</SubType>
     </Compile>
