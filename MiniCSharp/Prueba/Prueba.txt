@@ -24,8 +24,9 @@ class P
     {
         int x, i;
         //---------- Initialize val ----------
-        val     = new Table;
-        i       = (int)0.0;
+        val     = new Tableg;
+        x = new Table;
+        i       = (string) "a"+"a";
         i       = 2.09232+7-1*1/1%6;
         while (i < size) {
             //add(val.pos,0); 

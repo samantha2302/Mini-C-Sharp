@@ -331,32 +331,60 @@ namespace MiniCSharp.ANTLR4
             try {
                 if (context.expr().GetChild(0).GetText().Contains("new"))
                 {
-                    string cadena = context.expr().GetChild(0).GetText();
-                    cadena = cadena.Replace("new", "");
-                    IToken id = (IToken) Visit(context.designator());
-                    TablaSimbolos.Ident idExpr = laTabla.buscar(cadena);
-                    int idType = 13;
-                    if (laTabla.buscarMetodo(context.expr().GetChild(1).GetText(), idType) != -1) {
-                        laTabla.insertar(id, idType, false, true, idExpr);
-                    }else{
-                        errorMsgs.Add("\n" + "Error de instancia, la clase o metodo \"" + context.expr().GetChild(1).GetText() + "\" no ha sido creada." + showErrorPosition(id));
+                    if (laTabla.buscarNivel(context.designator().GetText(), laTabla.obtenerNivelActual()) == -1 &&
+                        laTabla.buscarNivel(context.designator().GetText(), laTabla.buscarNivelMetodo()) == -1 &&
+                        laTabla.buscarNivel(context.designator().GetText(), 0) == -1)
+                    {
+                        string cadena = context.expr().GetChild(0).GetText();
+                        cadena = cadena.Replace("new", "");
+                        int idType = 13;
+                        int idTypeBus = 12;
+                        IToken id = (IToken) Visit(context.designator());
+                        IToken idExpr = laTabla.buscarMetodoToken(cadena, idTypeBus);
+                        if (laTabla.buscarMetodo(cadena, idTypeBus) != -1) {
+                            laTabla.insertar(id, idType, false, true, idExpr);
+                        }else
+                        {
+                            errorMsgs.Add("\n" + "Error de instancia, la clase o metodo \"" + cadena + "\" dentro de la variable \"" + context.designator().GetText() + "\" no ha sido creada." + showErrorPosition(id));
+                        }
+                    }
+                    else
+                    {
+                        errorMsgs.Add("\n" + "Error de instancia, la variable \"" + context.designator().GetText() + "\" no puede llamarse igual que otra variable." + showErrorPosition(context.designator().Start));
                     }
                 }
                 
                 //MessageBox.Show(context.designator().GetText());
-                if (laTabla.buscarNivel(context.designator().GetText(), laTabla.obtenerNivelActual()) != -1)
+                else if (laTabla.buscarNivel(context.designator().GetText(), laTabla.obtenerNivelActual()) != -1 || 
+                         laTabla.buscarNivel(context.designator().GetText(), laTabla.buscarNivelMetodo()) != -1 || 
+                         laTabla.buscarNivel(context.designator().GetText(), 0) != -1)
                 {
-
-                }else if (laTabla.buscarNivel(context.designator().GetText(), laTabla.buscarNivelMetodo()) != -1)
-                {
-                    //int nivelMetodo = laTabla.buscarNivelMetodo();
-                }else if (laTabla.buscarNivel(context.designator().GetText(), 0) != -1)
-                {
+                    TablaSimbolos.Ident i= null;
+                    if (laTabla.buscarNivel(context.designator().GetText(), laTabla.obtenerNivelActual()) != -1)
+                    {
+                        i = laTabla.buscarToken(context.designator().GetText(), laTabla.obtenerNivelActual());
+                    }else if (laTabla.buscarNivel(context.designator().GetText(), laTabla.buscarNivelMetodo()) != -1)
+                    {
+                        i = laTabla.buscarToken(context.designator().GetText(), laTabla.buscarNivelMetodo());
+                    }else if (laTabla.buscarNivel(context.designator().GetText(), 0) != -1)
+                    {
+                        i = laTabla.buscarToken(context.designator().GetText(), 0);
+                    }
+                    
+                    int tipoID = i.GetType();
+                    if (tipoID==10 || tipoID==11 || tipoID==12 || tipoID==13){
+                        errorMsgs.Add("\n" +"Error de tipos, la variable \"" + context.designator().GetText()+ "\" no puede ser tipo list, void, class o new." + showErrorPosition(context.designator().Start));
+                    }
+                    
+                    int tipoExpr = (int) Visit(context.expr());
+                    MessageBox.Show(tipoExpr.ToString());
+                    if (tipoID != tipoExpr)//o al menos compatibles
+                        errorMsgs.Add("\n" +"Error de tipos: \""+ showType(tipoID) + "\" y \"" + showType(tipoExpr) + "\" no son compatibles." + showErrorPosition(context.designator().Start));
 
                 }
                 else
                 {
-                    errorMsgs.Add("\n" +"Error de alcances, identificador \"" + context.designator().GetText() + "\" no declarado en asignación." + showErrorPosition(context.designator().Start));
+                    errorMsgs.Add("\n" +"Error de asignacion, identificador \"" + context.designator().GetText() + "\" no declarado." + showErrorPosition(context.designator().Start));
                 }
                 
                 
@@ -509,12 +537,68 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitCastAST(MiniCSharpParser.CastASTContext context)
         {
-            Visit(context.type());
-            return null;
+            int result = -1;
+            
+            result= (int)Visit(context.type());
+            return result;
         }
 
         public override object VisitExprAST(MiniCSharpParser.ExprASTContext context)
         {
+            int cast = -1;
+            cast = (int) Visit(context.cast());
+            String op="";
+            
+            int result = -1;
+            
+            result = (int) Visit(context.term(0));
+
+            if (context.cast().ChildCount > 1)
+            {
+                if (isMultitype(op))
+                {
+                    //el operador es multitipo (char, int ...)
+                    if ((cast == 0 && result == 0) || (cast == 1 && result == 1) ||
+                        (cast == 2 && result == 2) || (cast == 3 && result == 3) ||
+                        (cast == 4 && result == 4) || (cast == 5 && result == 5) ||
+                        (cast == 6 && result == 6) || (cast == 7 && result == 7) ||
+                        (cast == 8 && result == 8) || (cast == 9 && result == 9) ||
+                        (cast == 0 && result == 1) || (cast == 2 && result == 3) ||
+                        (cast == 4 && result == 5) || (cast == 6 && result == 7) ||
+                        (cast == 8 && result == 9) || (cast == 0 && result == 2) ||
+                        (cast == 1 && result == 3) || (cast == 0 && result == 3))
+                    {
+                    }
+                    else
+                    {
+                        errorMsgs.Add("\n" + "Error de tipos, " + showType(cast) + " y " + showType(result) +
+                                      " no son compatibles para casting" + "." +
+                                      showErrorPosition(context.term(0).Start));
+                    }
+                }
+            }
+
+            for (int i = 1; context.term().Count() > i; i++) {
+                op = (String) Visit(context.addop(i-1));
+                int type2 = (int) Visit(context.term(i));
+                if (isMultitype(op)){ //el operador es multitipo (char, int ...)
+                    if ((result==0&&type2==0) || (result==1&&type2==1)) {
+                        result = type2; //si el operador recibiera dos tipos iguales pero devolviera otro, debe de cambiarse
+                    }else {
+                        errorMsgs.Add("\n" +"Error de tipos: " + showType(result) + " y " + showType(type2) + " no son compatibles para el operador " + op + "." + showErrorPosition(context.addop(i - 1).Start));
+                    }
+                }
+                else { //el operador es solo para int
+                    if ((result==0&&type2==0)) {
+                        result = type2;
+                    }else {
+                        errorMsgs.Add("\n" +"Error de tipos: " + showType(result) + " y " + showType(type2) + " no son compatibles para el operador " + op + "." + showErrorPosition(context.addop(i - 1).Start));
+                    }
+                }
+            }
+            return result;
+            
+            /*
             if (context.cast().ChildCount > 1)
             {
                 Visit(context.cast());
@@ -531,12 +615,35 @@ namespace MiniCSharp.ANTLR4
             {
                 Visit(context.term(i));
             }
-
+            */
             return null;
         }
 
         public override object VisitTermAST(MiniCSharpParser.TermASTContext context)
         {
+            int result = -1;
+            String op="";
+            result = (int) Visit(context.factor(0));
+            for (int i = 1; context.factor().Count() > i; i++) {
+                op = (String) Visit(context.mulop(i-1));
+                int type2 = (int) Visit(context.factor(i));
+                if (isMultitype(op)){ //el operador es multitipo (char, int ...)
+                    if ((result==0&&type2==0) || (result==1&&type2==1)) {
+                        result = type2; //si el operador recibiera dos tipos iguales pero devolviera otro, debe de cambiarse
+                    }else {
+                        errorMsgs.Add("\n" +"Error de tipos, " + showType(result) + " y " + showType(type2) + " no son compatibles para el operador " + op + "." + showErrorPosition(context.mulop(i - 1).Start));
+                    }
+                }
+                else { //el operador es solo para int
+                    if ((result==0&&type2==0)) {
+                        result = type2;
+                    }else {
+                        errorMsgs.Add("\n" +"Error de tipos: " + showType(result) + " y " + showType(type2) + " no son compatibles para el operador " + op + "." + showErrorPosition(context.mulop(i - 1).Start));
+                    }
+                }
+            }
+            return result;
+            /*
             Visit(context.factor(0));
             
             for (int i = 1; context.mulop().Count() > i; i++)
@@ -550,6 +657,7 @@ namespace MiniCSharp.ANTLR4
             }
 
             return null;
+            */
         }
 
         public override object VisitDesignatorFactorAST(MiniCSharpParser.DesignatorFactorASTContext context)
@@ -606,17 +714,17 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitRelop(MiniCSharpParser.RelopContext context)
         {
-            return null;
+            return base.VisitRelop(context);
         }
 
         public override object VisitAddop(MiniCSharpParser.AddopContext context)
         {
-            return null;
+            return context.GetChild(0).GetText();
         }
 
         public override object VisitMulop(MiniCSharpParser.MulopContext context)
         {
-            return null;
+            return base.VisitMulop(context);
         }
     }
 }

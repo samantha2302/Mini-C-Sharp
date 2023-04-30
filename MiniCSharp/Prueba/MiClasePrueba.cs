@@ -1,4 +1,6 @@
-﻿namespace MiniCSharp.Interfaz
+﻿using System.Collections.Generic;
+
+namespace MiniCSharp.Interfaz
 {
     public class MiClasePrueba
     {
@@ -43,8 +45,8 @@
             GetToken().GetType();
             return i;
         }
-
-        void cscs(int i)
+        
+        int Cscs(int i, int x)
         {
             int g;
             {
@@ -55,6 +57,28 @@
             int ada = kl.x;
             var p1 = new MiClasePrueba().ra();
             GetToken().GetType();
+            return i;
+        }
+
+        void cscs(int i)
+        {
+            int g;
+            {
+                g = 1;
+                int k;
+            }
+            
+            
+            
+            jk kl = new jk();
+            int ada = kl.x;
+            var p1 = new MiClasePrueba().ra();
+            GetToken().GetType();
+            Cscs(ada, ada);
+
+            List<int> j = new List<int>();
+            j.Add(1);
+
         }
     }
 }

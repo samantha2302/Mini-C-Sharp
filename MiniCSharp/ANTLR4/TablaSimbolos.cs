@@ -110,11 +110,23 @@ namespace MiniCSharp.ANTLR4
             return -1;
         }
         
+        public Ident buscarToken(String nombre, int nivel){
+            foreach (Object id in tabla){
+                if (((Ident)id).GetToken().Text.Equals(nombre)){
+                    if (((Ident)id).GetNivel().Equals(nivel))
+                    {
+                        return (Ident)id;
+                    }
+                }
+            }
+            return null;
+        }
+        
         public int buscarNivelMetodo(){
             foreach (Object id in tabla){
                 if (((Ident)id).GetIsMethod().Equals(true))
                 {
-                    MessageBox.Show(((Ident)id).GetToken().Text);
+                    //MessageBox.Show(((Ident)id).GetToken().Text);
                     return ((Ident)id).GetNivel();
                 }
             }
@@ -134,6 +146,21 @@ namespace MiniCSharp.ANTLR4
                 }
             }
             return -1;
+        }
+        
+        public IToken buscarMetodoToken(string nombre, int tipo)
+        {
+            foreach (Object id in tabla)
+            {
+                if (((Ident)id).GetToken().Text.Equals(nombre))
+                {
+                    if (((Ident)id).GetType().Equals(tipo))
+                    {
+                        return ((Ident)id).GetToken();
+                    }
+                }
+            }
+            return null;
         }
 
         public int obtenerNivelActual(){
