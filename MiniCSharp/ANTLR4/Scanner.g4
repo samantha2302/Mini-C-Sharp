@@ -72,8 +72,9 @@ fragment DIGIT : [0-9]+;
 
 NUMBER : [0-9]+;
 
-DOUBLE_CONST: NUMBER ('.' NUMBER)? EXPONENT? [fF]?;
-fragment EXPONENT: [+-]? NUMBER;
+DOUBLE_CONST: NUMBER DOT NUMBER;
+//DOUBLE_CONST: NUMBER ('.' NUMBER)? EXPONENT? [fF]?; correcto?
+//fragment EXPONENT: [+-]? NUMBER;
 
 CHAR_CONSTANT: '\'' (ESCAPE_SEQUENCE | ~['\\]) '\'';
 

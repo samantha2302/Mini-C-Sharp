@@ -19,10 +19,10 @@ classDecl: CLASS IDENTIFIER LBRACE varDecl* RBRACE                              
 // Regla para declaración de método
 methodDecl: (type | VOID) IDENTIFIER LPAREN (formPars)? RPAREN block                               #methodDeclAST;
 
-// Regla para parámetros de método (MODIFICADO)
+// Regla para parámetros de método
 formPars: type IDENTIFIER (COMMA type IDENTIFIER)*                                                 #formParsAST;
 
-// Regla para tipos de dato
+// Regla para tipos de dato (MODIFICADO)
 type: IDENTIFIER (LESS_THAN type GREATER_THAN)?  (LBRACK RBRACK)?                                  #typeAST;
 
 // Regla para una instrucción

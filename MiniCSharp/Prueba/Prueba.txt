@@ -4,29 +4,29 @@ using otraClase1;
 class P
 {
     class Table {
-        int[] pos;
+        int p;
         int[] neg;
     }
     
-    class Table {
-        int[] pos;
-        int[] neg;
-    }
+    //class Table {
+        //int[] pos;
+        //int[] neg;
+    //}
      //int x, i;
-     int [] x;
-     int [] p;
+     int m;
+     int p;
      
-   int prueba (int x)
+   int prueba ()
      {
         int x;
      }
   void Main ()
     {
         int x, i;
-    
         //---------- Initialize val ----------
         val     = new Table;
         i       = (int)0.0;
+        i       = 2.09232+7-1*1/1%6;
         while (i < size) {
             //add(val.pos,0); 
             val.neg[i] = 0;

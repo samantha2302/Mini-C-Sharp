@@ -2,25 +2,58 @@
 {
     public class MiClasePrueba
     {
-        public void Main ()
+        int x, i;
+        public int ra ()
         {
             int x, i;
+            x = 1;
+            return x;
         }
         }
 
     public class jk
     {
-        private int x;
+        public int x;
 
         public int GetToken()
         {
-            return x;
+            int x;
+            {
+                x = 1;
+
+                if (x == 1)
+                {
+                    x = 1;
+                }
+                return x;
+            }
+            return 1;
+        }
+        
+        public int ca(int i)
+        {
+            int g;
+            {
+                g = 1;
+                int k;
+            }
+            jk kl = new jk();
+            int ada = kl.x;
+            var p1 = new MiClasePrueba().ra();
+            GetToken().GetType();
+            return i;
         }
 
-        int cscs(int i)
+        void cscs(int i)
         {
-            return i;
-            //var p1 = new MiClasePrueba().Main();
+            int g;
+            {
+                g = 1;
+                int k;
+            }
+            jk kl = new jk();
+            int ada = kl.x;
+            var p1 = new MiClasePrueba().ra();
             GetToken().GetType();
         }
     }

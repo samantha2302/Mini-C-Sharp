@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 using Antlr4.Runtime;
 
 namespace MiniCSharp.ANTLR4
@@ -16,22 +17,36 @@ namespace MiniCSharp.ANTLR4
             int type; //esto probablemente cambie a un tipo más estructurado
             int nivel;
             int valor;
-            int variable;
 
             bool isMethod;
 
-            public Ident(IToken t, int tp, bool ism, int var){
+            bool isInstance;
+            
+            IToken instanceToken;
+
+            public Ident(IToken t, int tp, bool ism, bool isI, IToken iT){
                 tok = t;
                 type = tp;
                 nivel=nivelActual;
                 valor = 0;
                 isMethod=ism;
-                variable=var;
+                isInstance = isI;
+                instanceToken = iT;
             }
             
             public IToken GetToken()
             {
                 return tok;
+            }
+            
+            public bool GetIsMethod()
+            {
+                return isMethod;
+            }
+            
+            public bool GetIsInstance()
+            {
+                return isInstance;
             }
             
             public int GetType()
@@ -43,12 +58,7 @@ namespace MiniCSharp.ANTLR4
             {
                 return nivelActual;
             }
-            
-            public int GetVariable()
-            {
-                return variable;
-            }
-            
+
             public void SetNivelActual(int nivel_actual)
             {
                 nivelActual = nivel_actual;
@@ -70,9 +80,9 @@ namespace MiniCSharp.ANTLR4
             nivelActual = -1;
         }
 
-        public void insertar(IToken id, int tipo,bool ism, int var)
+        public void insertar(IToken t, int tp, bool ism, bool isI, IToken iT)
         {
-            Ident i = new Ident(id,tipo,ism, var);
+            Ident i = new Ident(t,tp,ism, isI, iT);
             tabla.AddFirst(i);
         }
 
@@ -88,10 +98,39 @@ namespace MiniCSharp.ANTLR4
             return null;
         }
 
-        public int buscarNivel(String nombre){
+        public int buscarNivel(String nombre, int nivel){
             foreach (Object id in tabla){
                 if (((Ident)id).GetToken().Text.Equals(nombre)){
+                    if (((Ident)id).GetNivel().Equals(nivel))
+                    {
+                        return ((Ident)id).GetNivel();
+                    }
+                }
+            }
+            return -1;
+        }
+        
+        public int buscarNivelMetodo(){
+            foreach (Object id in tabla){
+                if (((Ident)id).GetIsMethod().Equals(true))
+                {
+                    MessageBox.Show(((Ident)id).GetToken().Text);
                     return ((Ident)id).GetNivel();
+                }
+            }
+            return -1;
+        }
+
+        public int buscarMetodo(string nombre, int tipo)
+        {
+            foreach (Object id in tabla)
+            {
+                if (((Ident)id).GetToken().Text.Equals(nombre))
+                {
+                    if (((Ident)id).GetType().Equals(tipo))
+                    {
+                        return ((Ident)id).GetNivel();
+                    }
                 }
             }
             return -1;
@@ -123,7 +162,7 @@ namespace MiniCSharp.ANTLR4
             builder.Append("\n" +"----- INICIO TABLA ------");
             for (int i = 0; i < tabla.Count(); i++) {
                 IToken s = (IToken) ((Ident) tabla.ElementAt(i)).GetToken();
-                builder.Append("\n" + "Nombre: " + s.Text + " - " + ((Ident) tabla.ElementAt(i)).GetNivel() + " - " + ((Ident) tabla.ElementAt(i)).GetType() + " - " + ((Ident) tabla.ElementAt(i)).GetVariable());
+                builder.Append("\n" + "Nombre: " + s.Text + " - " + ((Ident) tabla.ElementAt(i)).GetNivel() + " - " + ((Ident) tabla.ElementAt(i)).GetType() + " - " + ((Ident) tabla.ElementAt(i)).GetIsMethod());
             }
             builder.Append("\n" +"----- FIN TABLA ------");
             return builder.ToString();

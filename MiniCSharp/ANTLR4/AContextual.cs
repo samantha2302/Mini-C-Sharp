@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -49,6 +50,8 @@ namespace MiniCSharp.ANTLR4
                 case 9: return "bool?";
                 case 10: return "list";
                 case 11: return "void";
+                case 12: return "class";
+                case 13: return "new";
                 default: return "none";
             }
         }
@@ -76,10 +79,10 @@ namespace MiniCSharp.ANTLR4
             laTabla.openScope();
             try {
                 IToken id = context.IDENTIFIER().Symbol;
-                int idType = 6;
+                int idType = 12;
                 TablaSimbolos.Ident i = laTabla.buscar(context.IDENTIFIER().GetText());
-                if (i == null || i != null && laTabla.buscarNivel(context.IDENTIFIER().GetText()) != laTabla.obtenerNivelActual()) {
-                    laTabla.insertar(id, idType, true, 0);
+                if (i == null || i != null && laTabla.buscarNivel(context.IDENTIFIER().GetText(), laTabla.obtenerNivelActual()) == -1) {
+                    laTabla.insertar(id, idType, true, false, id);
                 }else{
                     errorMsgs.Add("\n" + "Error de clase, la clase \"" + context.IDENTIFIER().GetText() + "\" ya fue declarada." + showErrorPosition(context.IDENTIFIER().Symbol));
                 }
@@ -98,13 +101,11 @@ namespace MiniCSharp.ANTLR4
 
             for (int i = 0; context.methodDecl().Count() > i; i++)
             {
+                laTabla.openScope();
                 Visit(context.methodDecl(i));
             }
             MessageBox.Show(laTabla.imprimir()+ "\n" + toString());
             laTabla.closeScope();
-            //Visit(context.@using(0));
-            
-            //Visit(context.classDecl(0));
             return null;
         }
 
@@ -120,8 +121,9 @@ namespace MiniCSharp.ANTLR4
                 IToken id = context.IDENTIFIER(0).Symbol;
                 int idType = (int) Visit(context.type());
                 TablaSimbolos.Ident i = laTabla.buscar(context.IDENTIFIER(0).GetText());
-                if (i == null || i != null && laTabla.buscarNivel(context.IDENTIFIER(0).GetText()) != laTabla.obtenerNivelActual()) {
-                    laTabla.insertar(id, idType,false, 0);
+                if (i == null || i != null && laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) == -1) {
+                    
+                    laTabla.insertar(id, idType,false, false, id);
                 }else{
                     errorMsgs.Add("\n" + "Error de variable, variable \"" + context.IDENTIFIER(0).GetText() + "\" ya fue declarada." + showErrorPosition(context.IDENTIFIER(0).Symbol));
                 }
@@ -130,8 +132,8 @@ namespace MiniCSharp.ANTLR4
                 {
                     IToken idN = context.IDENTIFIER(sum).Symbol;
                     TablaSimbolos.Ident iN = laTabla.buscar(context.IDENTIFIER(sum).GetText());
-                    if (iN == null || iN != null && laTabla.buscarNivel(context.IDENTIFIER(sum).GetText()) != laTabla.obtenerNivelActual()) {
-                        laTabla.insertar(idN, idType,false, 0);
+                    if (iN == null || iN != null && laTabla.buscarNivel(context.IDENTIFIER(sum).GetText(), laTabla.obtenerNivelActual()) == -1) {
+                        laTabla.insertar(idN, idType,false, false, idN);
                     }else{
                         errorMsgs.Add("\n" + "Error de variable, variable \"" + context.IDENTIFIER(sum).GetText() + "\" ya fue declarada." + showErrorPosition(context.IDENTIFIER(sum).Symbol));
                     }
@@ -144,10 +146,10 @@ namespace MiniCSharp.ANTLR4
         {
             try {
                 IToken id = context.IDENTIFIER().Symbol;
-                int idType = 6;
+                int idType = 12;
                 TablaSimbolos.Ident i = laTabla.buscar(context.IDENTIFIER().GetText());
                 if (i == null) {
-                    laTabla.insertar(id, idType, true, 0);
+                    laTabla.insertar(id, idType, true, false, id);
                     
                     for (int sum = 0; context.varDecl().Count() > sum; sum++)
                     {
@@ -170,14 +172,16 @@ namespace MiniCSharp.ANTLR4
                     idType = (int)Visit(context.type());
                 }
                 TablaSimbolos.Ident i = laTabla.buscar(context.IDENTIFIER().GetText());
-                if (i == null || i != null && laTabla.buscarNivel(context.IDENTIFIER().GetText()) != laTabla.obtenerNivelActual()) {
-                    laTabla.insertar(id, idType, true, 1);
+                if (i == null || i != null && laTabla.buscarNivel(context.IDENTIFIER().GetText(), laTabla.obtenerNivelActual()) == -1) {
+                    laTabla.insertar(id, idType, true, false, id);
+                    Visit(context.block());
+                    
+                    ///TODO revisar porque no se sabe
                     if (context.formPars().ChildCount > 1)
                     {
                         Visit(context.formPars());
                     }
-                    Visit(context.block());
-                    
+
                 }else{
                     errorMsgs.Add("\n" + "Error de metodo, metodo \"" + context.IDENTIFIER().GetText() + "\" ya fue declarado." + showErrorPosition(context.IDENTIFIER().Symbol));
                 }
@@ -191,8 +195,8 @@ namespace MiniCSharp.ANTLR4
                 IToken id = context.IDENTIFIER(0).Symbol;
                 int idType = (int) Visit(context.type(0));
                 TablaSimbolos.Ident i = laTabla.buscar(context.IDENTIFIER(0).GetText());
-                if (i == null || i != null && laTabla.buscarNivel(context.IDENTIFIER(0).GetText()) != laTabla.obtenerNivelActual()) {
-                    laTabla.insertar(id, idType,true, 0);
+                if (i == null || i != null && laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) == -1) {
+                    laTabla.insertar(id, idType,true, false, id);
                 }else{
                     errorMsgs.Add("\n" + "Error de variable, variable \"" + context.IDENTIFIER(0).GetText() + "\" ya fue declarada." + showErrorPosition(context.IDENTIFIER(0).Symbol));
                 }
@@ -202,8 +206,8 @@ namespace MiniCSharp.ANTLR4
                     IToken idN = context.IDENTIFIER(sum).Symbol;
                     int idTypeN = (int) Visit(context.type(sum));
                     TablaSimbolos.Ident iN = laTabla.buscar(context.IDENTIFIER(sum).GetText());
-                    if (iN == null || iN != null && laTabla.buscarNivel(context.IDENTIFIER(sum).GetText()) != laTabla.obtenerNivelActual()) {
-                        laTabla.insertar(idN, idTypeN,true, 0);
+                    if (iN == null || iN != null && laTabla.buscarNivel(context.IDENTIFIER(sum).GetText(), laTabla.obtenerNivelActual()) == -1){
+                        laTabla.insertar(idN, idTypeN,true, false, idN);
                     }else{
                         errorMsgs.Add("\n" + "Error de variable, variable \"" + context.IDENTIFIER(sum).GetText() + "\" ya fue declarada." + showErrorPosition(context.IDENTIFIER(sum).Symbol));
                     }
@@ -220,7 +224,7 @@ namespace MiniCSharp.ANTLR4
                 result = 0;
                 if (context.LESS_THAN() != null)
                 {
-                    errorMsgs.Add("Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
+                    errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
                 }
             }
             else if (context.IDENTIFIER().GetText().Equals("int?"))
@@ -229,7 +233,7 @@ namespace MiniCSharp.ANTLR4
                 
                 if (context.LESS_THAN() != null)
                 {
-                    errorMsgs.Add("Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
+                    errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
                 }
             }
             else if (context.IDENTIFIER().GetText().Equals("double"))
@@ -238,7 +242,7 @@ namespace MiniCSharp.ANTLR4
                 
                 if (context.LESS_THAN() != null)
                 {
-                    errorMsgs.Add("Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
+                    errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
                 }
             }
             else if (context.IDENTIFIER().GetText().Equals("double?"))
@@ -247,7 +251,7 @@ namespace MiniCSharp.ANTLR4
                 
                 if (context.LESS_THAN() != null)
                 {
-                    errorMsgs.Add("Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
+                    errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
                 }
             }
             else if (context.IDENTIFIER().GetText().Equals("char"))
@@ -256,7 +260,7 @@ namespace MiniCSharp.ANTLR4
                 
                 if (context.LESS_THAN() != null)
                 {
-                    errorMsgs.Add("Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
+                    errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
                 }
             }
             else if (context.IDENTIFIER().GetText().Equals("char?"))
@@ -265,7 +269,7 @@ namespace MiniCSharp.ANTLR4
                 
                 if (context.LESS_THAN() != null)
                 {
-                    errorMsgs.Add("Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
+                    errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
                 }
             }
             else if (context.IDENTIFIER().GetText().Equals("string"))
@@ -274,7 +278,7 @@ namespace MiniCSharp.ANTLR4
                 
                 if (context.LESS_THAN() != null)
                 {
-                    errorMsgs.Add("Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
+                    errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
                 }
             }
             else if (context.IDENTIFIER().GetText().Equals("string?"))
@@ -283,7 +287,7 @@ namespace MiniCSharp.ANTLR4
                 
                 if (context.LESS_THAN() != null)
                 {
-                    errorMsgs.Add("Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
+                    errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
                 }
             }
             else if (context.IDENTIFIER().GetText().Equals("bool"))
@@ -292,7 +296,7 @@ namespace MiniCSharp.ANTLR4
                 
                 if (context.LESS_THAN() != null)
                 {
-                    errorMsgs.Add("Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
+                    errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
                 }
             }
             else if (context.IDENTIFIER().GetText().Equals("bool?"))
@@ -301,7 +305,7 @@ namespace MiniCSharp.ANTLR4
                 
                 if (context.LESS_THAN() != null)
                 {
-                    errorMsgs.Add("Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
+                    errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
                 }
             }
             else if (context.IDENTIFIER().GetText().Equals("list"))
@@ -309,13 +313,13 @@ namespace MiniCSharp.ANTLR4
                 result = 10;
             }
             else {
-                errorMsgs.Add("Error de tipos, tipo \"" + context.IDENTIFIER().GetText() + "\" no es un tipo valido." + showErrorPosition(context.IDENTIFIER().Symbol));
+                errorMsgs.Add("\n" +"Error de tipos, tipo \"" + context.IDENTIFIER().GetText() + "\" no es un tipo valido." + showErrorPosition(context.IDENTIFIER().Symbol));
                 
                 if (context.LESS_THAN() != null && context.GREATER_THAN() != null)
                 {
                     if (context.IDENTIFIER().GetText().Equals("int"))
                     {
-                        errorMsgs.Add("Error de tipos, tipo \"" + context.IDENTIFIER().GetText() + "\" no puede recibir otro tipo \"" + context.IDENTIFIER().GetText() + "\" ." + showErrorPosition(context.IDENTIFIER().Symbol));
+                        errorMsgs.Add("\n" +"Error de tipos, tipo \"" + context.IDENTIFIER().GetText() + "\" no puede recibir otro tipo \"" + context.IDENTIFIER().GetText() + "\" ." + showErrorPosition(context.IDENTIFIER().Symbol));
                     }
                 }
             }
@@ -324,69 +328,125 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitDesignatorStatementAST(MiniCSharpParser.DesignatorStatementASTContext context)
         {
+            try {
+                if (context.expr().GetChild(0).GetText().Contains("new"))
+                {
+                    string cadena = context.expr().GetChild(0).GetText();
+                    cadena = cadena.Replace("new", "");
+                    IToken id = (IToken) Visit(context.designator());
+                    TablaSimbolos.Ident idExpr = laTabla.buscar(cadena);
+                    int idType = 13;
+                    if (laTabla.buscarMetodo(context.expr().GetChild(1).GetText(), idType) != -1) {
+                        laTabla.insertar(id, idType, false, true, idExpr);
+                    }else{
+                        errorMsgs.Add("\n" + "Error de instancia, la clase o metodo \"" + context.expr().GetChild(1).GetText() + "\" no ha sido creada." + showErrorPosition(id));
+                    }
+                }
+                
+                //MessageBox.Show(context.designator().GetText());
+                if (laTabla.buscarNivel(context.designator().GetText(), laTabla.obtenerNivelActual()) != -1)
+                {
+
+                }else if (laTabla.buscarNivel(context.designator().GetText(), laTabla.buscarNivelMetodo()) != -1)
+                {
+                    //int nivelMetodo = laTabla.buscarNivelMetodo();
+                }else if (laTabla.buscarNivel(context.designator().GetText(), 0) != -1)
+                {
+
+                }
+                else
+                {
+                    errorMsgs.Add("\n" +"Error de alcances, identificador \"" + context.designator().GetText() + "\" no declarado en asignación." + showErrorPosition(context.designator().Start));
+                }
+                
+                
+                
+            }
+            catch (Exception e) {}
+            
             /*
-try {
-TablaSimbolos.Ident i = laTabla.buscar((string) Visit(context.designator()));
-
-if (i == null)
-    System.out.println("Error de alcances, identificador \"" + ctx.ID().getText() + "\" no declarado en asignación." + showErrorPosition(ctx.ID().getSymbol()));
-else {
-    int tipoID = i.type;
-    int variableID = i.variable;
-    if (tipoID==2){
-        System.out.println("Error de tipos: identificador \"" + ctx.ID().getText() + "\" es de tipo void, no se puede usar en asignacion." + showErrorPosition(ctx.ID().getSymbol()));
-    }
-    if (variableID==0){
-        System.out.println("Error de tipos: identificador \"" + ctx.ID().getText() + "\" es una constante, no se puede usar en asignacion." + showErrorPosition(ctx.ID().getSymbol()));
-    }
-    int tipoExpr = (int) visit(ctx.expression());
-    if (tipoID != tipoExpr)//o al menos compatibles
-        System.out.println("Error de tipos: \""+ showType(tipoID) + "\" y \"" + showType(tipoExpr) + "\" no son compatibles." + showErrorPosition(ctx.Assign().getSymbol()));
-}
-
-}
-catch (RuntimeException e) {}
-*/
-        return null;
+            Visit(context.designator());
+            
+            if (context.ASSIGN() != null)
+            {
+                Visit(context.expr());
+            }
+            
+            if (context.actPars().ChildCount > 1)
+            {
+                Visit(context.actPars());
+            }
+            return null;
+            */
+            return null;
         }
 
         public override object VisitIfStatementAST(MiniCSharpParser.IfStatementASTContext context)
         {
+            Visit(context.condition());
+            Visit(context.statement(0));
+            if (context.statement().Count() > 1)
+            {
+                Visit(context.statement(1));
+            }
+
             return null;
         }
 
         public override object VisitForStatementAST(MiniCSharpParser.ForStatementASTContext context)
         {
+            Visit(context.expr());
+            
+            if (context.condition().ChildCount > 1)
+            {
+                Visit(context.condition());
+            }
+            
+            if (context.statement().Count() > 2)
+            {
+                Visit(context.statement(1));
+            }
+            Visit(context.statement(0));
             return null;
         }
 
         public override object VisitWhileStatementAST(MiniCSharpParser.WhileStatementASTContext context)
         {
+            Visit(context.condition());
+            Visit(context.statement());
             return null;
         }
 
         public override object VisitBreakStatementAST(MiniCSharpParser.BreakStatementASTContext context)
         {
+            //esto debe hacer algo
             return null;
         }
 
         public override object VisitReturnStatementAST(MiniCSharpParser.ReturnStatementASTContext context)
         {
+            if (context.expr().ChildCount > 1)
+            {
+                Visit(context.expr());
+            }
             return null;
         }
 
         public override object VisitReadStatementAST(MiniCSharpParser.ReadStatementASTContext context)
         {
+            Visit(context.designator());
             return null;
         }
 
         public override object VisitWriteStatementAST(MiniCSharpParser.WriteStatementASTContext context)
         {
+            Visit(context.expr());
             return null;
         }
 
         public override object VisitBlockStatementAST(MiniCSharpParser.BlockStatementASTContext context)
         {
+            Visit(context.block());
             return null;
         }
 
@@ -397,87 +457,151 @@ catch (RuntimeException e) {}
 
         public override object VisitBlockAST(MiniCSharpParser.BlockASTContext context)
         {
+            for (int i = 0; context.varDecl().Count() > i; i++)
+            {
+                Visit(context.varDecl(i));
+            }
+            
+            for (int sum = 0; context.statement().Count() > sum; sum++)
+            {
+                Visit(context.statement(sum));
+            }
             return null;
         }
 
         public override object VisitActParsAST(MiniCSharpParser.ActParsASTContext context)
         {
+            Visit(context.expr(0));
+            for (int i = 1; context.expr().Count() > i; i++)
+            {
+                Visit(context.expr(i));
+            }
             return null;
         }
 
         public override object VisitConditionAST(MiniCSharpParser.ConditionASTContext context)
         {
+            Visit(context.condTerm(0));
+            for (int i = 1; context.condTerm().Count() > i; i++)
+            {
+                Visit(context.condTerm(i));
+            }
             return null;
         }
 
         public override object VisitCondTermAST(MiniCSharpParser.CondTermASTContext context)
         {
+            Visit(context.condFact(0));
+            for (int i = 1; context.condFact().Count() > i; i++)
+            {
+                Visit(context.condFact(i));
+            }
             return null;
         }
 
         public override object VisitCondFactAST(MiniCSharpParser.CondFactASTContext context)
         {
+            Visit(context.expr(0));
+            Visit(context.relop());
+            Visit(context.expr(1));
             return null;
         }
 
         public override object VisitCastAST(MiniCSharpParser.CastASTContext context)
         {
+            Visit(context.type());
             return null;
         }
 
         public override object VisitExprAST(MiniCSharpParser.ExprASTContext context)
         {
+            if (context.cast().ChildCount > 1)
+            {
+                Visit(context.cast());
+            }
+
+            Visit(context.term(0));
+            
+            for (int i = 0; context.addop().Count() > i; i++)
+            {
+                Visit(context.addop(i));
+            }
+            
+            for (int i = 1; context.term().Count() > i; i++)
+            {
+                Visit(context.term(i));
+            }
+
             return null;
         }
 
         public override object VisitTermAST(MiniCSharpParser.TermASTContext context)
         {
+            Visit(context.factor(0));
+            
+            for (int i = 1; context.mulop().Count() > i; i++)
+            {
+                Visit(context.mulop(i));
+            }
+            
+            for (int sum = 1; context.factor().Count() > sum; sum++)
+            {
+                Visit(context.factor(sum));
+            }
+
             return null;
         }
 
         public override object VisitDesignatorFactorAST(MiniCSharpParser.DesignatorFactorASTContext context)
         {
+            Visit(context.designator());
             return null;
         }
 
         public override object VisitNumberFactorAST(MiniCSharpParser.NumberFactorASTContext context)
         {
-            return null;
+            return 0;
         }
 
         public override object VisitCharFactorAST(MiniCSharpParser.CharFactorASTContext context)
         {
-            return null;
+            return 4;
         }
 
         public override object VisitStringFactorAST(MiniCSharpParser.StringFactorASTContext context)
         {
-            return null;
+            return 6;
         }
 
         public override object VisitDoubleFactorAST(MiniCSharpParser.DoubleFactorASTContext context)
         {
-            return null;
+            return 2;
         }
 
         public override object VisitBoolFactorAST(MiniCSharpParser.BoolFactorASTContext context)
         {
-            return null;
+            return 8;
         }
 
         public override object VisitNewFactorAST(MiniCSharpParser.NewFactorASTContext context)
         {
-            return null;
+            
+            return context.IDENTIFIER().Symbol;
         }
 
         public override object VisitExprFactorAST(MiniCSharpParser.ExprFactorASTContext context)
         {
+            Visit(context.expr());
             return null;
         }
 
         public override object VisitDesignatorAST(MiniCSharpParser.DesignatorASTContext context)
         {
-            return null;
+            for (int i = 0; context.expr().Count() > i; i++)
+            {
+                Visit(context.expr(i));
+            }
+            return context.IDENTIFIER(0).Symbol;
         }
 
         public override object VisitRelop(MiniCSharpParser.RelopContext context)
