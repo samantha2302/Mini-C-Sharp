@@ -67,14 +67,21 @@ namespace MiniCSharp.Interfaz
                 g = 1;
                 int k;
             }
-            
-            
-            
+
+
+            List<int?> t = new List<int?>();
+            t.Add((int?)1);
             jk kl = new jk();
             int ada = kl.x;
-            var p1 = new MiClasePrueba().ra();
+            var p1 = "a";
             GetToken().GetType();
             Cscs(ada, ada);
+            double? bnm = (int?)2.000;
+
+            if (2.000>1)
+            {
+                
+            }
 
             List<int> j = new List<int>();
             j.Add(1);

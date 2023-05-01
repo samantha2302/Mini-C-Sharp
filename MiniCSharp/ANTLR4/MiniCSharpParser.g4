@@ -23,7 +23,7 @@ methodDecl: (type | VOID) IDENTIFIER LPAREN (formPars)? RPAREN block            
 formPars: type IDENTIFIER (COMMA type IDENTIFIER)*                                                 #formParsAST;
 
 // Regla para tipos de dato (MODIFICADO)
-type: IDENTIFIER (LESS_THAN type GREATER_THAN)?  (LBRACK RBRACK)?                                  #typeAST;
+type: IDENTIFIER (QMARK)? (LESS_THAN type GREATER_THAN)?  (LBRACK RBRACK)?                                  #typeAST;
 
 // Regla para una instrucción
 statement: designator (ASSIGN expr | LPAREN (actPars)? RPAREN | INCREMENT | DECREMENT) SEMICOLON   #designatorStatementAST
@@ -69,7 +69,8 @@ factor: designator (LPAREN (actPars)? RPAREN)?                                  
       | DOUBLE_CONST                                                                               #doubleFactorAST //SE AGREGO PARA MANEJAR TIPOS DOUBLE.
       | (TRUE | FALSE)                                                                             #boolFactorAST
       | NEW IDENTIFIER                                                                             #newFactorAST
-      | LPAREN expr RPAREN                                                                         #exprFactorAST;
+      | LPAREN expr RPAREN                                                                         #exprFactorAST
+      | NULL                                                                                       #nullFactorAST; //MODIFICADO
 
 // Regla para un designador
 designator: IDENTIFIER (DOT IDENTIFIER | LBRACK expr RBRACK)*                                      #designatorAST;

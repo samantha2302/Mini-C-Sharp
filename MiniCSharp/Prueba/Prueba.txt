@@ -23,11 +23,16 @@ class P
   void Main ()
     {
         int x, i;
+        int? o;
+        double b;
+        bool y;
         //---------- Initialize val ----------
         val     = new Tableg;
         x = new Table;
-        i       = (string) "a"+"a";
-        i       = 2.09232+7-1*1/1%6;
+        b       = (int)1+2.000;
+        i       = 2.99/2.90990*2+2.000;
+        y= true;
+        
         while (i < size) {
             //add(val.pos,0); 
             val.neg[i] = 0;

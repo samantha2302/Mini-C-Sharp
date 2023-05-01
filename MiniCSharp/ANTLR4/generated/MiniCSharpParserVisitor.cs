@@ -264,6 +264,13 @@ public interface IMiniCSharpParserVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitExprFactorAST([NotNull] MiniCSharpParser.ExprFactorASTContext context);
 	/// <summary>
+	/// Visit a parse tree produced by the <c>nullFactorAST</c>
+	/// labeled alternative in <see cref="MiniCSharpParser.factor"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitNullFactorAST([NotNull] MiniCSharpParser.NullFactorASTContext context);
+	/// <summary>
 	/// Visit a parse tree produced by the <c>designatorAST</c>
 	/// labeled alternative in <see cref="MiniCSharpParser.designator"/>.
 	/// </summary>

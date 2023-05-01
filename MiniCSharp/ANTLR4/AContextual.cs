@@ -14,7 +14,7 @@ namespace MiniCSharp.ANTLR4
     {
         private TablaSimbolos laTabla;
         public ArrayList<String> errorMsgs = new ArrayList<String>();
-        
+        public int designatorAssign;
         public AContextual(){
             this.laTabla = new TablaSimbolos();
             this.errorMsgs = new ArrayList<String>();
@@ -63,10 +63,6 @@ namespace MiniCSharp.ANTLR4
             switch (op){
                 case "==": return true;
                 case "!=": return true;
-                case ">": return true;
-                case ">=": return true;
-                case "<": return true;
-                case "<=": return true;
                 default:  return false;
             }
         }
@@ -219,108 +215,134 @@ namespace MiniCSharp.ANTLR4
         public override object VisitTypeAST(MiniCSharpParser.TypeASTContext context)
         {
             int result=-1;
-            if (context.IDENTIFIER().GetText().Equals("int"))
+            if (context.QMARK() == null)
             {
-                result = 0;
-                if (context.LESS_THAN() != null)
+                if (context.IDENTIFIER().GetText().Equals("int"))
                 {
-                    errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
-                }
-            }
-            else if (context.IDENTIFIER().GetText().Equals("int?"))
-            {
-                result = 1;
-                
-                if (context.LESS_THAN() != null)
-                {
-                    errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
-                }
-            }
-            else if (context.IDENTIFIER().GetText().Equals("double"))
-            {
-                result = 2;
-                
-                if (context.LESS_THAN() != null)
-                {
-                    errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
-                }
-            }
-            else if (context.IDENTIFIER().GetText().Equals("double?"))
-            {
-                result = 3;
-                
-                if (context.LESS_THAN() != null)
-                {
-                    errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
-                }
-            }
-            else if (context.IDENTIFIER().GetText().Equals("char"))
-            {
-                result = 4;
-                
-                if (context.LESS_THAN() != null)
-                {
-                    errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
-                }
-            }
-            else if (context.IDENTIFIER().GetText().Equals("char?"))
-            {
-                result = 5;
-                
-                if (context.LESS_THAN() != null)
-                {
-                    errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
-                }
-            }
-            else if (context.IDENTIFIER().GetText().Equals("string"))
-            {
-                result = 6;
-                
-                if (context.LESS_THAN() != null)
-                {
-                    errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
-                }
-            }
-            else if (context.IDENTIFIER().GetText().Equals("string?"))
-            {
-                result = 7;
-                
-                if (context.LESS_THAN() != null)
-                {
-                    errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
-                }
-            }
-            else if (context.IDENTIFIER().GetText().Equals("bool"))
-            {
-                result = 8;
-                
-                if (context.LESS_THAN() != null)
-                {
-                    errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
-                }
-            }
-            else if (context.IDENTIFIER().GetText().Equals("bool?"))
-            {
-                result = 9;
-                
-                if (context.LESS_THAN() != null)
-                {
-                    errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
-                }
-            }
-            else if (context.IDENTIFIER().GetText().Equals("list"))
-            {
-                result = 10;
-            }
-            else {
-                errorMsgs.Add("\n" +"Error de tipos, tipo \"" + context.IDENTIFIER().GetText() + "\" no es un tipo valido." + showErrorPosition(context.IDENTIFIER().Symbol));
-                
-                if (context.LESS_THAN() != null && context.GREATER_THAN() != null)
-                {
-                    if (context.IDENTIFIER().GetText().Equals("int"))
+                    result = 0;
+                    if (context.LESS_THAN() != null)
                     {
-                        errorMsgs.Add("\n" +"Error de tipos, tipo \"" + context.IDENTIFIER().GetText() + "\" no puede recibir otro tipo \"" + context.IDENTIFIER().GetText() + "\" ." + showErrorPosition(context.IDENTIFIER().Symbol));
+                        errorMsgs.Add("\n" + "Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" +
+                                      context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." +
+                                      showErrorPosition(context.IDENTIFIER().Symbol));
                     }
+                }
+                else if (context.IDENTIFIER().GetText().Equals("double"))
+                {
+                    result = 2;
+
+                    if (context.LESS_THAN() != null)
+                    {
+                        errorMsgs.Add("\n" + "Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" +
+                                      context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." +
+                                      showErrorPosition(context.IDENTIFIER().Symbol));
+                    }
+                }
+                else if (context.IDENTIFIER().GetText().Equals("char"))
+                {
+                    result = 4;
+
+                    if (context.LESS_THAN() != null)
+                    {
+                        errorMsgs.Add("\n" + "Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" +
+                                      context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." +
+                                      showErrorPosition(context.IDENTIFIER().Symbol));
+                    }
+                }
+                else if (context.IDENTIFIER().GetText().Equals("string"))
+                {
+                    result = 6;
+
+                    if (context.LESS_THAN() != null)
+                    {
+                        errorMsgs.Add("\n" + "Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" +
+                                      context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." +
+                                      showErrorPosition(context.IDENTIFIER().Symbol));
+                    }
+                }
+                else if (context.IDENTIFIER().GetText().Equals("bool"))
+                {
+                    result = 8;
+
+                    if (context.LESS_THAN() != null)
+                    {
+                        errorMsgs.Add("\n" + "Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" +
+                                      context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." +
+                                      showErrorPosition(context.IDENTIFIER().Symbol));
+                    }
+                }
+                else if (context.IDENTIFIER().GetText().Equals("list"))
+                {
+                    result = 10;
+                }
+                else
+                {
+                    errorMsgs.Add("\n" + "Error de tipos, tipo \"" + context.IDENTIFIER().GetText() +
+                                  "\" no es un tipo valido." + showErrorPosition(context.IDENTIFIER().Symbol));
+
+                    if (context.LESS_THAN() != null && context.GREATER_THAN() != null)
+                    {
+                        if (context.IDENTIFIER().GetText().Equals("int"))
+                        {
+                            errorMsgs.Add("\n" + "Error de tipos, tipo \"" + context.IDENTIFIER().GetText() +
+                                          "\" no puede recibir otro tipo \"" + context.IDENTIFIER().GetText() + "\" ." +
+                                          showErrorPosition(context.IDENTIFIER().Symbol));
+                        }
+                    }
+                }
+            }
+
+            if (context.QMARK() != null)
+            {
+                if (context.IDENTIFIER().GetText().Equals("int"))
+                {
+                    result = 1;
+                
+                    if (context.LESS_THAN() != null)
+                    {
+                        errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
+                    }
+                }else if (context.IDENTIFIER().GetText().Equals("double"))
+                {
+                    result = 3;
+                
+                    if (context.LESS_THAN() != null)
+                    {
+                        errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
+                    }
+                    
+                }else if (context.IDENTIFIER().GetText().Equals("char"))
+                {
+                    result = 5;
+                
+                    if (context.LESS_THAN() != null)
+                    {
+                        errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
+                    }
+                    
+                }else if (context.IDENTIFIER().GetText().Equals("string"))
+                {
+                    result = 7;
+                
+                    if (context.LESS_THAN() != null)
+                    {
+                        errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
+                    }
+                    
+                }else if (context.IDENTIFIER().GetText().Equals("bool"))
+                {
+                    result =9;
+                
+                    if (context.LESS_THAN() != null)
+                    {
+                        errorMsgs.Add("\n" +"Error de tipos, el \"" + context.LESS_THAN().GetText() + "\" y el \"" + context.GREATER_THAN().GetText() + "\"solo se puede usar en el tipo list." + showErrorPosition(context.IDENTIFIER().Symbol));
+                    }
+                    
+                }
+                else
+                {
+                    errorMsgs.Add("\n" + "Error de tipos, tipo \"" + context.IDENTIFIER().GetText() +
+                                  "\" no es un tipo valido." + showErrorPosition(context.IDENTIFIER().Symbol));
                 }
             }
             return result;
@@ -328,67 +350,31 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitDesignatorStatementAST(MiniCSharpParser.DesignatorStatementASTContext context)
         {
-            try {
-                if (context.expr().GetChild(0).GetText().Contains("new"))
+            try
+            {
+                //int result = 1;
+                //result= (int) Visit(context.designator());
+                designatorAssign = (int)Visit(context.designator());
+                if (context.ASSIGN() != null)
                 {
-                    if (laTabla.buscarNivel(context.designator().GetText(), laTabla.obtenerNivelActual()) == -1 &&
-                        laTabla.buscarNivel(context.designator().GetText(), laTabla.buscarNivelMetodo()) == -1 &&
-                        laTabla.buscarNivel(context.designator().GetText(), 0) == -1)
+                    Visit(context.expr());
+                    /*
+                    int tipoExpr = 1;
+                    tipoExpr= (int) Visit(context.expr());
+                    if (result != tipoExpr)
                     {
-                        string cadena = context.expr().GetChild(0).GetText();
-                        cadena = cadena.Replace("new", "");
-                        int idType = 13;
-                        int idTypeBus = 12;
-                        IToken id = (IToken) Visit(context.designator());
-                        IToken idExpr = laTabla.buscarMetodoToken(cadena, idTypeBus);
-                        if (laTabla.buscarMetodo(cadena, idTypeBus) != -1) {
-                            laTabla.insertar(id, idType, false, true, idExpr);
-                        }else
-                        {
-                            errorMsgs.Add("\n" + "Error de instancia, la clase o metodo \"" + cadena + "\" dentro de la variable \"" + context.designator().GetText() + "\" no ha sido creada." + showErrorPosition(id));
-                        }
+                        errorMsgs.Add("\n" + "Error de tipos, \"" + showType(result) + "\" y \"" + showType(tipoExpr) +
+                                      "\" no son compatibles." + showErrorPosition(context.ASSIGN().Symbol));
                     }
-                    else
-                    {
-                        errorMsgs.Add("\n" + "Error de instancia, la variable \"" + context.designator().GetText() + "\" no puede llamarse igual que otra variable." + showErrorPosition(context.designator().Start));
-                    }
+                    */
                 }
-                
-                //MessageBox.Show(context.designator().GetText());
-                else if (laTabla.buscarNivel(context.designator().GetText(), laTabla.obtenerNivelActual()) != -1 || 
-                         laTabla.buscarNivel(context.designator().GetText(), laTabla.buscarNivelMetodo()) != -1 || 
-                         laTabla.buscarNivel(context.designator().GetText(), 0) != -1)
+            
+                if (context.actPars() != null)
                 {
-                    TablaSimbolos.Ident i= null;
-                    if (laTabla.buscarNivel(context.designator().GetText(), laTabla.obtenerNivelActual()) != -1)
-                    {
-                        i = laTabla.buscarToken(context.designator().GetText(), laTabla.obtenerNivelActual());
-                    }else if (laTabla.buscarNivel(context.designator().GetText(), laTabla.buscarNivelMetodo()) != -1)
-                    {
-                        i = laTabla.buscarToken(context.designator().GetText(), laTabla.buscarNivelMetodo());
-                    }else if (laTabla.buscarNivel(context.designator().GetText(), 0) != -1)
-                    {
-                        i = laTabla.buscarToken(context.designator().GetText(), 0);
-                    }
-                    
-                    int tipoID = i.GetType();
-                    if (tipoID==10 || tipoID==11 || tipoID==12 || tipoID==13){
-                        errorMsgs.Add("\n" +"Error de tipos, la variable \"" + context.designator().GetText()+ "\" no puede ser tipo list, void, class o new." + showErrorPosition(context.designator().Start));
-                    }
-                    
-                    int tipoExpr = (int) Visit(context.expr());
-                    MessageBox.Show(tipoExpr.ToString());
-                    if (tipoID != tipoExpr)//o al menos compatibles
-                        errorMsgs.Add("\n" +"Error de tipos: \""+ showType(tipoID) + "\" y \"" + showType(tipoExpr) + "\" no son compatibles." + showErrorPosition(context.designator().Start));
+                    Visit(context.actPars());
+                }
 
-                }
-                else
-                {
-                    errorMsgs.Add("\n" +"Error de asignacion, identificador \"" + context.designator().GetText() + "\" no declarado." + showErrorPosition(context.designator().Start));
-                }
-                
-                
-                
+
             }
             catch (Exception e) {}
             
@@ -545,42 +531,107 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitExprAST(MiniCSharpParser.ExprASTContext context)
         {
-            int cast = -1;
-            cast = (int) Visit(context.cast());
-            String op="";
-            
-            int result = -1;
-            
-            result = (int) Visit(context.term(0));
 
-            if (context.cast().ChildCount > 1)
+            if (context.cast() != null)
             {
-                if (isMultitype(op))
-                {
-                    //el operador es multitipo (char, int ...)
-                    if ((cast == 0 && result == 0) || (cast == 1 && result == 1) ||
-                        (cast == 2 && result == 2) || (cast == 3 && result == 3) ||
-                        (cast == 4 && result == 4) || (cast == 5 && result == 5) ||
-                        (cast == 6 && result == 6) || (cast == 7 && result == 7) ||
-                        (cast == 8 && result == 8) || (cast == 9 && result == 9) ||
-                        (cast == 0 && result == 1) || (cast == 2 && result == 3) ||
-                        (cast == 4 && result == 5) || (cast == 6 && result == 7) ||
-                        (cast == 8 && result == 9) || (cast == 0 && result == 2) ||
-                        (cast == 1 && result == 3) || (cast == 0 && result == 3))
+                int cast = -1;
+                cast = (int) Visit(context.cast());
+                //el operador es multitipo (char, int ...)
+                    if ((cast == 0 && designatorAssign == 0) || (cast == 1 && designatorAssign == 1) ||
+                        (cast == 2 && designatorAssign == 2) || (cast == 3 && designatorAssign == 3) ||
+                        (cast == 4 && designatorAssign == 4) || (cast == 5 && designatorAssign == 5) ||
+                        (cast == 6 && designatorAssign == 6) || (cast == 7 && designatorAssign == 7) ||
+                        (cast == 8 && designatorAssign == 8) || (cast == 9 && designatorAssign == 9) ||
+                        (cast == 0 && designatorAssign == 1) || (cast == 2 && designatorAssign == 3) ||
+                        (cast == 4 && designatorAssign == 5) || (cast == 6 && designatorAssign == 7) ||
+                        (cast == 8 && designatorAssign == 9) || (cast == 0 && designatorAssign == 2) ||
+                        (cast == 1 && designatorAssign == 3) || (cast == 0 && designatorAssign == 3))
                     {
+                        if (cast==0)
+                        {
+                            designatorAssign = 0;
+                        }else if (cast == 1)
+                        {
+                            designatorAssign = 1;
+                        }else if (cast == 2)
+                        {
+                            designatorAssign = 2;
+                        }else if (cast == 3)
+                        {
+                            designatorAssign = 3;
+                        }else if (cast == 4)
+                        {
+                            designatorAssign = 4;
+                        }else if (cast == 5)
+                        {
+                            designatorAssign = 5;
+                        }else if (cast == 6)
+                        {
+                            designatorAssign = 6;
+                        }else if (cast == 7)
+                        {
+                            designatorAssign = 7;
+                        }else if (cast == 8)
+                        {
+                            designatorAssign = 8;
+                        }else if (cast == 9)
+                        {
+                            designatorAssign = 9;
+                        }
                     }
                     else
                     {
-                        errorMsgs.Add("\n" + "Error de tipos, " + showType(cast) + " y " + showType(result) +
+                        errorMsgs.Add("\n" + "Error de tipos, " + showType(cast) + " y " + showType(designatorAssign) +
                                       " no son compatibles para casting" + "." +
                                       showErrorPosition(context.term(0).Start));
                     }
+            }
+            
+            String op="";
+
+            int result = -1;
+
+            result = (int) Visit(context.term(0));
+
+            if (result ==21)
+            {
+                if (designatorAssign != -1 && designatorAssign == 0 ||
+                    designatorAssign != -1 && designatorAssign == 2 ||
+                    designatorAssign != -1 && designatorAssign == 4 ||
+                    designatorAssign != -1 && designatorAssign == 6 ||
+                    designatorAssign != -1 && designatorAssign == 8)
+                {
+                    errorMsgs.Add("\n" + "Error de tipos, " + showType(designatorAssign) +
+                                  " no puede asignarse con null" + "." +
+                                  showErrorPosition(context.term(0).Start));
                 }
+            }
+            if (result !=21)
+            {
+                if (designatorAssign != -1 && designatorAssign == 1 ||
+                    designatorAssign != -1 && designatorAssign == 3 ||
+                    designatorAssign != -1 && designatorAssign == 5 ||
+                    designatorAssign != -1 && designatorAssign == 7 ||
+                    designatorAssign != -1 && designatorAssign == 9)
+                {
+                    designatorAssign--;
+                }
+            }
+
+            if (designatorAssign != -1 && designatorAssign != result &&
+                designatorAssign != 1 && designatorAssign != 3 && designatorAssign != 5 &&
+                designatorAssign != 7 && designatorAssign != 9)
+            {
+                errorMsgs.Add("\n" +"Error de tipos: \""+ showType(designatorAssign) + "\" y \"" + showType(result) + "\" no son compatibles." + showErrorPosition(context.term(0).Start));
             }
 
             for (int i = 1; context.term().Count() > i; i++) {
                 op = (String) Visit(context.addop(i-1));
                 int type2 = (int) Visit(context.term(i));
+                if (designatorAssign != -1 && designatorAssign != type2)
+                {
+                    errorMsgs.Add("\n" +"Error de tipos: \""+ showType(designatorAssign) + "\" y \"" + showType(type2) + "\" no son compatibles." + showErrorPosition(context.term(i).Start));
+                }
                 if (isMultitype(op)){ //el operador es multitipo (char, int ...)
                     if ((result==0&&type2==0) || (result==1&&type2==1)) {
                         result = type2; //si el operador recibiera dos tipos iguales pero devolviera otro, debe de cambiarse
@@ -589,13 +640,24 @@ namespace MiniCSharp.ANTLR4
                     }
                 }
                 else { //el operador es solo para int
-                    if ((result==0&&type2==0)) {
+                    if (result==0&&type2==0 || result==1&&type2==1 ||
+                        result==2&&type2==2 || result==3&&type2==3 ||
+                        result==0&&type2==1 || result==0&&type2==2 ||
+                        result==0&&type2==3  || result==1&&type2==0 ||
+                        result==1&&type2==1 || result==1&&type2==2  ||
+                        result==1&&type2==3 || result==2&&type2==0 ||
+                        result==2&&type2==1 || result==2&&type2==2 ||
+                        result==2&&type2==3 || result==3&&type2==0 ||
+                        result==3&&type2==1 || result==3&&type2==2 ||
+                        result==3&&type2==3) {
                         result = type2;
                     }else {
                         errorMsgs.Add("\n" +"Error de tipos: " + showType(result) + " y " + showType(type2) + " no son compatibles para el operador " + op + "." + showErrorPosition(context.addop(i - 1).Start));
                     }
                 }
             }
+
+            designatorAssign = -1;
             return result;
             
             /*
@@ -624,9 +686,16 @@ namespace MiniCSharp.ANTLR4
             int result = -1;
             String op="";
             result = (int) Visit(context.factor(0));
+
             for (int i = 1; context.factor().Count() > i; i++) {
                 op = (String) Visit(context.mulop(i-1));
                 int type2 = (int) Visit(context.factor(i));
+                
+                if (designatorAssign != -1 && designatorAssign != type2)
+                {
+                    errorMsgs.Add("\n" +"Error de tipos: \""+ showType(designatorAssign) + "\" y \"" + showType(type2) + "\" no son compatibles." + showErrorPosition(context.factor(i).Start));
+                }
+                
                 if (isMultitype(op)){ //el operador es multitipo (char, int ...)
                     if ((result==0&&type2==0) || (result==1&&type2==1)) {
                         result = type2; //si el operador recibiera dos tipos iguales pero devolviera otro, debe de cambiarse
@@ -635,7 +704,16 @@ namespace MiniCSharp.ANTLR4
                     }
                 }
                 else { //el operador es solo para int
-                    if ((result==0&&type2==0)) {
+                    if (result==0&&type2==0 || result==1&&type2==1 ||
+                        result==2&&type2==2 || result==3&&type2==3 ||
+                        result==0&&type2==1 || result==0&&type2==2 ||
+                        result==0&&type2==3  || result==1&&type2==0 ||
+                        result==1&&type2==1 || result==1&&type2==2  ||
+                        result==1&&type2==3 || result==2&&type2==0 ||
+                        result==2&&type2==1 || result==2&&type2==2 ||
+                        result==2&&type2==3 || result==3&&type2==0 ||
+                        result==3&&type2==1 || result==3&&type2==2 ||
+                        result==3&&type2==3) {
                         result = type2;
                     }else {
                         errorMsgs.Add("\n" +"Error de tipos: " + showType(result) + " y " + showType(type2) + " no son compatibles para el operador " + op + "." + showErrorPosition(context.mulop(i - 1).Start));
@@ -662,8 +740,9 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitDesignatorFactorAST(MiniCSharpParser.DesignatorFactorASTContext context)
         {
-            Visit(context.designator());
-            return null;
+            int result = -1;
+            result= (int) Visit(context.designator());
+            return result;
         }
 
         public override object VisitNumberFactorAST(MiniCSharpParser.NumberFactorASTContext context)
@@ -703,18 +782,49 @@ namespace MiniCSharp.ANTLR4
             return null;
         }
 
+        public override object VisitNullFactorAST(MiniCSharpParser.NullFactorASTContext context)
+        {
+            return 21;
+        }
+
         public override object VisitDesignatorAST(MiniCSharpParser.DesignatorASTContext context)
         {
-            for (int i = 0; context.expr().Count() > i; i++)
+            int result =-1;
+            TablaSimbolos.Ident i = null;
+            if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) != -1 ||
+                     laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.buscarNivelMetodo()) != -1 ||
+                     laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), 0) != -1)
             {
-                Visit(context.expr(i));
+                if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) != -1)
+                {
+                    i = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual());
+                }
+                else if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.buscarNivelMetodo()) != -1)
+                {
+                    i = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), laTabla.buscarNivelMetodo());
+                }
+                else if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), 0) != -1)
+                {
+                    i = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), 0);
+                }
+
+                result = i.GetType();
+            } else
+            {
+                errorMsgs.Add("\n" +"Error de asignacion, identificador \"" + context.IDENTIFIER(0).GetText() + "\" no declarado." + showErrorPosition(context.IDENTIFIER(0).Symbol));
             }
-            return context.IDENTIFIER(0).Symbol;
+
+            //for (int i = 0; context.expr().Count() > i; i++)
+            //{
+                //Visit(context.expr(i));
+            //}
+            //return context.IDENTIFIER(0).Symbol;
+            return result;
         }
 
         public override object VisitRelop(MiniCSharpParser.RelopContext context)
         {
-            return base.VisitRelop(context);
+            return context.GetChild(0).GetText();
         }
 
         public override object VisitAddop(MiniCSharpParser.AddopContext context)
@@ -724,7 +834,7 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitMulop(MiniCSharpParser.MulopContext context)
         {
-            return base.VisitMulop(context);
+            return context.GetChild(0).GetText();
         }
     }
 }
