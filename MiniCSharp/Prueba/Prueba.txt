@@ -26,35 +26,13 @@ class P
         int? o;
         double b;
         bool y;
-        {
-        int xc;
-            {
-            
-            {
-            int xc;
-            }
-            }
-        }
-        int lp;
-        y++;
-        b--;
-        //---------- Initialize val ----------
-        val     = new Tableg;
-        x = new Table;
-        b       = (int)2+2;
-        y= -y;
-        i       = 2.99/2.90990*2+2.000;
-        y= true;
+        b = 2.000+1;
         
-        while (i < size) {
-            //add(val.pos,0); 
-            val.neg[i] = 0;
+        if ((int)2.00+1==1)
+        {
+            
         }
-        read(x);
-        while (-size < x && x < size) {
-            if (0 <= x) val.pos[x]++;
-            read(x);
-    write("Valor de x: "); write(x,2);
-        }
+        
+        
     }
 }

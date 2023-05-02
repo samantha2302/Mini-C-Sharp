@@ -52,6 +52,7 @@ namespace MiniCSharp.ANTLR4
                 case 11: return "void";
                 case 12: return "class";
                 case 13: return "new";
+                case 21: return "null";
                 default: return "none";
             }
         }
@@ -574,10 +575,59 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitCondFactAST(MiniCSharpParser.CondFactASTContext context)
         {
-            Visit(context.expr(0));
-            Visit(context.relop());
-            Visit(context.expr(1));
-            return null;
+            int result = -1;
+            string op = "";
+            int type2 = -1; 
+            
+            result= (int) Visit(context.expr(0));
+            
+            
+            op = (String) Visit(context.relop());
+            
+            
+            type2= (int) Visit(context.expr(1));
+            
+            if (isMultitype(op)){ //el operador es multitipo (char, int ...)
+                if ((result==0&&type2==0) || (result==1&&type2==1) ||
+                    (result==2&&type2==2) || (result==3&&type2==3) ||
+                    (result==4&&type2==4) || (result==5&&type2==5) || 
+                    (result==6&&type2==6) || (result==7&&type2==7) ||
+                    (result==8&&type2==8) || (result==9&&type2==9) ||
+                    (result==10&type2==10) ||
+                    (result==0&&type2==1) || (result==1&&type2==0) ||
+                    (result==2&&type2==3) || (result==3&&type2==2) ||
+                    (result==4&&type2==5) || (result==5&&type2==4) ||
+                    (result==6&&type2==7) || (result==7&&type2==6) ||
+                    (result==8&&type2==9) || (result==9&&type2==8)||
+                    (result==0&&type2==2) || (result==2&&type2==0)||
+                    (result==1&&type2==3) || (result==3&&type2==1)||
+                    (result==0&&type2==3) || (result==3&&type2==0)||
+                    (result==1&&type2==2) || (result==2&&type2==1) || 
+                    (result==21&&type2==21)){
+                    result = type2; //si el operador recibiera dos tipos iguales pero devolviera otro, debe de cambiarse
+                }else {
+                    errorMsgs.Add("\n" +"Error de tipos, " + showType(result) + " y " + showType(type2) + " no son compatibles para el operador " + op + "." + showErrorPosition(context.relop().Start));
+                }
+            }
+            else { //el operador es solo para int
+                if (result==0&&type2==0 || result==1&&type2==1 ||
+                    result==2&&type2==2 || result==3&&type2==3 ||
+                    result==0&&type2==1 || result==0&&type2==2 ||
+                    result==0&&type2==3  || result==1&&type2==0 ||
+                    result==1&&type2==1 || result==1&&type2==2  ||
+                    result==1&&type2==3 || result==2&&type2==0 ||
+                    result==2&&type2==1 || result==2&&type2==2 ||
+                    result==2&&type2==3 || result==3&&type2==0 ||
+                    result==3&&type2==1 || result==3&&type2==2) {
+                    result = type2;
+                }else {
+                    errorMsgs.Add("\n" +"Error de tipos, " + showType(result) + " y " + showType(type2) + " no son compatibles para el operador " + op + "." + showErrorPosition(context.relop().Start));
+                }
+            }
+            
+            
+            
+            return result;
         }
 
         public override object VisitCastAST(MiniCSharpParser.CastASTContext context)
@@ -590,21 +640,38 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitExprAST(MiniCSharpParser.ExprASTContext context)
         {
+            
+            String op="";
+
+            int result = -1;
+
+            result = (int) Visit(context.term(0));
 
             if (context.MINUS() != null)
             {
-                if (designatorAssign != 0 && designatorAssign != 1 && designatorAssign != 2 &&
-                    designatorAssign != 3)
+                if (designatorAssign != -1)
                 {
-                    errorMsgs.Add("\n" +"Error de tipos, \""+ showType(designatorAssign) + "\" no puede utilizar \"" + context.MINUS().GetText() + "\"." + showErrorPosition(context.term(0).Start));
+                    if (designatorAssign != 0 && designatorAssign != 1 && designatorAssign != 2 &&
+                        designatorAssign != 3)
+                    {
+                        errorMsgs.Add("\n" +"Error de tipos, \""+ showType(designatorAssign) + "\" no puede utilizar \"" + context.MINUS().GetText() + "\"." + showErrorPosition(context.term(0).Start));
+                    }
+                }else if (result != 0 && result != 1 && result != 2 &&
+                          result != 3)
+                {
+                    errorMsgs.Add("\n" +"Error de tipos, \""+ showType(result) + "\" no puede utilizar \"" + context.MINUS().GetText() + "\"." + showErrorPosition(context.term(0).Start));
                 }
+
             }
 
             if (context.cast() != null)
             {
                 int cast = -1;
                 cast = (int) Visit(context.cast());
-                //el operador es multitipo (char, int ...)
+
+                if (designatorAssign != -1)
+                {
+                    //el operador es multitipo (char, int ...)
                     if ((cast == 0 && designatorAssign == 0) || (cast == 1 && designatorAssign == 1) ||
                         (cast == 2 && designatorAssign == 2) || (cast == 3 && designatorAssign == 3) ||
                         (cast == 4 && designatorAssign == 4) || (cast == 5 && designatorAssign == 5) ||
@@ -615,34 +682,43 @@ namespace MiniCSharp.ANTLR4
                         (cast == 8 && designatorAssign == 9) || (cast == 0 && designatorAssign == 2) ||
                         (cast == 1 && designatorAssign == 3) || (cast == 0 && designatorAssign == 3))
                     {
-                        if (cast==0)
+                        if (cast == 0)
                         {
                             designatorAssign = 0;
-                        }else if (cast == 1)
+                        }
+                        else if (cast == 1)
                         {
                             designatorAssign = 1;
-                        }else if (cast == 2)
+                        }
+                        else if (cast == 2)
                         {
                             designatorAssign = 2;
-                        }else if (cast == 3)
+                        }
+                        else if (cast == 3)
                         {
                             designatorAssign = 3;
-                        }else if (cast == 4)
+                        }
+                        else if (cast == 4)
                         {
                             designatorAssign = 4;
-                        }else if (cast == 5)
+                        }
+                        else if (cast == 5)
                         {
                             designatorAssign = 5;
-                        }else if (cast == 6)
+                        }
+                        else if (cast == 6)
                         {
                             designatorAssign = 6;
-                        }else if (cast == 7)
+                        }
+                        else if (cast == 7)
                         {
                             designatorAssign = 7;
-                        }else if (cast == 8)
+                        }
+                        else if (cast == 8)
                         {
                             designatorAssign = 8;
-                        }else if (cast == 9)
+                        }
+                        else if (cast == 9)
                         {
                             designatorAssign = 9;
                         }
@@ -653,13 +729,68 @@ namespace MiniCSharp.ANTLR4
                                       " no son compatibles para casting" + "." +
                                       showErrorPosition(context.term(0).Start));
                     }
+                }
+                else
+                { 
+                    if ((cast == 0 && result == 0) || (cast == 1 && result == 1) ||
+                      (cast == 2 && result == 2) || (cast == 3 && result == 3) ||
+                      (cast == 4 && result == 4) || (cast == 5 && result == 5) ||
+                      (cast == 6 && result == 6) || (cast == 7 && result == 7) ||
+                      (cast == 8 && result == 8) || (cast == 9 && result == 9) ||
+                      (cast == 0 && result == 1) || (cast == 2 && result == 3) ||
+                      (cast == 4 && result == 5) || (cast == 6 && result == 7) ||
+                      (cast == 8 && result == 9) || (cast == 0 && result == 2) ||
+                      (cast == 1 && result == 3) || (cast == 0 && result == 3))
+                    {
+                        if (cast == 0)
+                        {
+                            result = 0;
+                        }
+                        else if (cast == 1)
+                        {
+                            result = 1;
+                        }
+                        else if (cast == 2)
+                        {
+                            result = 2;
+                        }
+                        else if (cast == 3)
+                        {
+                            result = 3;
+                        }
+                        else if (cast == 4)
+                        {
+                            result = 4;
+                        }
+                        else if (cast == 5)
+                        {
+                            result = 5;
+                        }
+                        else if (cast == 6)
+                        {
+                            result = 6;
+                        }
+                        else if (cast == 7)
+                        {
+                            result = 7;
+                        }
+                        else if (cast == 8)
+                        {
+                            result = 8;
+                        }
+                        else if (cast == 9)
+                        {
+                            result = 9;
+                        }
+                    }
+                    else
+                    {
+                        errorMsgs.Add("\n" + "Error de tipos, " + showType(cast) + " y " + showType(result) +
+                                      " no son compatibles para casting" + "." +
+                                      showErrorPosition(context.term(0).Start));
+                    }
+                }
             }
-            
-            String op="";
-
-            int result = -1;
-
-            result = (int) Visit(context.term(0));
 
             if (result ==21)
             {
@@ -699,6 +830,9 @@ namespace MiniCSharp.ANTLR4
                 if (designatorAssign != -1 && designatorAssign != type2)
                 {
                     errorMsgs.Add("\n" +"Error de tipos: \""+ showType(designatorAssign) + "\" y \"" + showType(type2) + "\" no son compatibles." + showErrorPosition(context.term(i).Start));
+                }else if (result != type2)
+                {
+                    errorMsgs.Add("\n" +"Error de tipos: \""+ showType(result) + "\" y \"" + showType(type2) + "\" no son compatibles." + showErrorPosition(context.term(i).Start));
                 }
                 if (isMultitype(op)){ //el operador es multitipo (char, int ...)
                     if ((result==0&&type2==0) || (result==1&&type2==1)) {
@@ -840,7 +974,7 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitNewFactorAST(MiniCSharpParser.NewFactorASTContext context)
         {
-            
+            //TODO MODIFICAR
             return context.IDENTIFIER().Symbol;
         }
 
@@ -857,6 +991,7 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitDesignatorAST(MiniCSharpParser.DesignatorASTContext context)
         {
+            //TODO MODIFICAR
             int result =-1;
             TablaSimbolos.Ident i = null;
 

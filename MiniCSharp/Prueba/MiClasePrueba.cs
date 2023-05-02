@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using generated;
 
 namespace MiniCSharp.Interfaz
 {
@@ -63,11 +64,13 @@ namespace MiniCSharp.Interfaz
         void cscs(int i)
         {
             int g;
+
+            List<int> h = new List<int>();
+            List<int> b = new List<int>();
+
+            while (2+2<1)
             {
-                
-                int k;
-                {
-                }
+                break;
             }
 
 
@@ -89,6 +92,7 @@ namespace MiniCSharp.Interfaz
 
             List<int> j = new List<int>();
             j.Add(1);
+            int jkl;
 
         }
     }
