@@ -20,17 +20,20 @@ namespace MiniCSharp.ANTLR4
 
             bool isMethod;
 
-            bool isInstance;
+            bool isClass;
+
+            bool isVarMethod;
             
             IToken instanceToken;
 
-            public Ident(IToken t, int tp, bool ism, bool isI, IToken iT){
+            public Ident(IToken t, int tp, bool ism, bool isc, bool isvm, IToken iT){
                 tok = t;
                 type = tp;
                 nivel=nivelActual;
                 valor = 0;
                 isMethod=ism;
-                isInstance = isI;
+                isClass = isc;
+                isVarMethod = isvm;
                 instanceToken = iT;
             }
             
@@ -44,9 +47,9 @@ namespace MiniCSharp.ANTLR4
                 return isMethod;
             }
             
-            public bool GetIsInstance()
+            public bool GetIsVarMethod()
             {
-                return isInstance;
+                return isVarMethod;
             }
             
             public int GetType()
@@ -80,9 +83,9 @@ namespace MiniCSharp.ANTLR4
             nivelActual = -1;
         }
 
-        public void insertar(IToken t, int tp, bool ism, bool isI, IToken iT)
+        public void insertar(IToken t, int tp, bool ism, bool isc, bool isvm, IToken iT)
         {
-            Ident i = new Ident(t,tp,ism, isI, iT);
+            Ident i = new Ident(t,tp,ism,isc, isvm, iT);
             tabla.AddFirst(i);
         }
 
@@ -170,6 +173,10 @@ namespace MiniCSharp.ANTLR4
 
         public void openScope(){
             nivelActual++;
+        }
+        
+        public void DecrementarNivel(){
+            nivelActual--;
         }
 
         public void closeScope(){

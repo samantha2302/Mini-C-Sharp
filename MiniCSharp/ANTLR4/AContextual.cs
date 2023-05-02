@@ -77,8 +77,9 @@ namespace MiniCSharp.ANTLR4
                 IToken id = context.IDENTIFIER().Symbol;
                 int idType = 12;
                 TablaSimbolos.Ident i = laTabla.buscar(context.IDENTIFIER().GetText());
-                if (i == null || i != null && laTabla.buscarNivel(context.IDENTIFIER().GetText(), laTabla.obtenerNivelActual()) == -1) {
-                    laTabla.insertar(id, idType, true, false, id);
+                if (i == null || i != null && laTabla.buscarNivel(context.IDENTIFIER().GetText(), laTabla.obtenerNivelActual()) == -1)
+                {
+                    laTabla.insertar(id, idType, false, true, false, id);
                 }else{
                     errorMsgs.Add("\n" + "Error de clase, la clase \"" + context.IDENTIFIER().GetText() + "\" ya fue declarada." + showErrorPosition(context.IDENTIFIER().Symbol));
                 }
@@ -117,9 +118,26 @@ namespace MiniCSharp.ANTLR4
                 IToken id = context.IDENTIFIER(0).Symbol;
                 int idType = (int) Visit(context.type());
                 TablaSimbolos.Ident i = laTabla.buscar(context.IDENTIFIER(0).GetText());
-                if (i == null || i != null && laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) == -1) {
+                if (i == null || i != null && laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) == -1)
+                {
+                    int verificar = -1;
+                    if (laTabla.buscarNivelMetodo() != -1)
+                    {
+                        for (int p = laTabla.buscarNivelMetodo(); laTabla.obtenerNivelActual() > p; p++)
+                        {
+                            if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), p) != -1)
+                            {
+                                errorMsgs.Add("\n" + "Error de variable, variable \"" + context.IDENTIFIER(0).GetText() + "\" ya fue declarada." + showErrorPosition(context.IDENTIFIER(0).Symbol));
+                                verificar = 1;
+                            }
+                        }
+                    }
+
+                    if (verificar == -1)
+                    {
+                        laTabla.insertar(id, idType, false, false, false, id);
+                    }
                     
-                    laTabla.insertar(id, idType,false, false, id);
                 }else{
                     errorMsgs.Add("\n" + "Error de variable, variable \"" + context.IDENTIFIER(0).GetText() + "\" ya fue declarada." + showErrorPosition(context.IDENTIFIER(0).Symbol));
                 }
@@ -129,7 +147,25 @@ namespace MiniCSharp.ANTLR4
                     IToken idN = context.IDENTIFIER(sum).Symbol;
                     TablaSimbolos.Ident iN = laTabla.buscar(context.IDENTIFIER(sum).GetText());
                     if (iN == null || iN != null && laTabla.buscarNivel(context.IDENTIFIER(sum).GetText(), laTabla.obtenerNivelActual()) == -1) {
-                        laTabla.insertar(idN, idType,false, false, idN);
+                        
+                        int verificar = -1;
+                        if (laTabla.buscarNivelMetodo() != -1)
+                        {
+                            for (int p = laTabla.buscarNivelMetodo(); laTabla.obtenerNivelActual() > p; p++)
+                            {
+                                if (laTabla.buscarNivel(context.IDENTIFIER(sum).GetText(), p) != -1)
+                                {
+                                    errorMsgs.Add("\n" + "Error de variable, variable \"" + context.IDENTIFIER(sum).GetText() + "\" ya fue declarada." + showErrorPosition(context.IDENTIFIER(0).Symbol));
+                                    verificar = 1;
+                                }
+                            }
+                        }
+
+                        if (verificar == -1)
+                        {
+                            laTabla.insertar(idN, idType, false, false, false, idN);
+                        }
+                        
                     }else{
                         errorMsgs.Add("\n" + "Error de variable, variable \"" + context.IDENTIFIER(sum).GetText() + "\" ya fue declarada." + showErrorPosition(context.IDENTIFIER(sum).Symbol));
                     }
@@ -145,7 +181,7 @@ namespace MiniCSharp.ANTLR4
                 int idType = 12;
                 TablaSimbolos.Ident i = laTabla.buscar(context.IDENTIFIER().GetText());
                 if (i == null) {
-                    laTabla.insertar(id, idType, true, false, id);
+                    laTabla.insertar(id, idType, false, true, false, id);
                     
                     for (int sum = 0; context.varDecl().Count() > sum; sum++)
                     {
@@ -169,14 +205,17 @@ namespace MiniCSharp.ANTLR4
                 }
                 TablaSimbolos.Ident i = laTabla.buscar(context.IDENTIFIER().GetText());
                 if (i == null || i != null && laTabla.buscarNivel(context.IDENTIFIER().GetText(), laTabla.obtenerNivelActual()) == -1) {
-                    laTabla.insertar(id, idType, true, false, id);
-                    Visit(context.block());
+                    laTabla.insertar(id, idType, true, false, false, id);
                     
-                    ///TODO revisar porque no se sabe
-                    if (context.formPars().ChildCount > 1)
+                    if (context.formPars() != null)
                     {
                         Visit(context.formPars());
                     }
+                    
+                    laTabla.DecrementarNivel();
+                    Visit(context.block());
+                    
+                    ///TODO revisar porque no se sabe
 
                 }else{
                     errorMsgs.Add("\n" + "Error de metodo, metodo \"" + context.IDENTIFIER().GetText() + "\" ya fue declarado." + showErrorPosition(context.IDENTIFIER().Symbol));
@@ -191,8 +230,9 @@ namespace MiniCSharp.ANTLR4
                 IToken id = context.IDENTIFIER(0).Symbol;
                 int idType = (int) Visit(context.type(0));
                 TablaSimbolos.Ident i = laTabla.buscar(context.IDENTIFIER(0).GetText());
-                if (i == null || i != null && laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) == -1) {
-                    laTabla.insertar(id, idType,true, false, id);
+                if (i == null || i != null && laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) == -1)
+                {
+                    laTabla.insertar(id, idType, false, false, true, id);
                 }else{
                     errorMsgs.Add("\n" + "Error de variable, variable \"" + context.IDENTIFIER(0).GetText() + "\" ya fue declarada." + showErrorPosition(context.IDENTIFIER(0).Symbol));
                 }
@@ -203,7 +243,7 @@ namespace MiniCSharp.ANTLR4
                     int idTypeN = (int) Visit(context.type(sum));
                     TablaSimbolos.Ident iN = laTabla.buscar(context.IDENTIFIER(sum).GetText());
                     if (iN == null || iN != null && laTabla.buscarNivel(context.IDENTIFIER(sum).GetText(), laTabla.obtenerNivelActual()) == -1){
-                        laTabla.insertar(idN, idTypeN,true, false, idN);
+                        laTabla.insertar(idN, idTypeN,false, false,true, idN);
                     }else{
                         errorMsgs.Add("\n" + "Error de variable, variable \"" + context.IDENTIFIER(sum).GetText() + "\" ya fue declarada." + showErrorPosition(context.IDENTIFIER(sum).Symbol));
                     }
@@ -368,6 +408,24 @@ namespace MiniCSharp.ANTLR4
                     }
                     */
                 }
+
+                if (context.INCREMENT() != null)
+                {
+                    if (designatorAssign != 0 && designatorAssign != 1 && designatorAssign != 2 &&
+                        designatorAssign != 3)
+                    {
+                        errorMsgs.Add("\n" +"Error de tipos, \""+ showType(designatorAssign) + "\" no puede utilizar \"" + context.INCREMENT().GetText() + "\"." + showErrorPosition(context.designator().Start));
+                    }
+                }
+                
+                if (context.DECREMENT() != null)
+                {
+                    if (designatorAssign != 0 && designatorAssign != 1 && designatorAssign != 2 &&
+                        designatorAssign != 3)
+                    {
+                        errorMsgs.Add("\n" +"Error de tipos, \""+ showType(designatorAssign) + "\" no puede utilizar \"" + context.DECREMENT().GetText() + "\"." + showErrorPosition(context.designator().Start));
+                    }
+                }
             
                 if (context.actPars() != null)
                 {
@@ -471,6 +529,7 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitBlockAST(MiniCSharpParser.BlockASTContext context)
         {
+            laTabla.openScope();
             for (int i = 0; context.varDecl().Count() > i; i++)
             {
                 Visit(context.varDecl(i));
@@ -531,6 +590,15 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitExprAST(MiniCSharpParser.ExprASTContext context)
         {
+
+            if (context.MINUS() != null)
+            {
+                if (designatorAssign != 0 && designatorAssign != 1 && designatorAssign != 2 &&
+                    designatorAssign != 3)
+                {
+                    errorMsgs.Add("\n" +"Error de tipos, \""+ showType(designatorAssign) + "\" no puede utilizar \"" + context.MINUS().GetText() + "\"." + showErrorPosition(context.term(0).Start));
+                }
+            }
 
             if (context.cast() != null)
             {
@@ -791,9 +859,10 @@ namespace MiniCSharp.ANTLR4
         {
             int result =-1;
             TablaSimbolos.Ident i = null;
+
             if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) != -1 ||
-                     laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.buscarNivelMetodo()) != -1 ||
-                     laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), 0) != -1)
+                laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.buscarNivelMetodo()) != -1 ||
+                laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), 0) != -1)
             {
                 if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) != -1)
                 {
@@ -809,7 +878,34 @@ namespace MiniCSharp.ANTLR4
                 }
 
                 result = i.GetType();
-            } else
+            }else if (laTabla.buscarNivelMetodo() != -1)
+            {
+                int verificarNivel =-1;
+
+                int nivel = -1;
+                
+                for (int p = laTabla.buscarNivelMetodo(); laTabla.obtenerNivelActual() > p; p++)
+                {
+                    if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), p) != -1)
+                    {
+                        nivel = p;
+                        break;
+                    }
+                }
+                
+                if (nivel !=-1)
+                {
+                    i = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), nivel);
+                    result = i.GetType();
+                }
+                else
+                {
+                    errorMsgs.Add("\n" +"Error de asignacion, identificador \"" + context.IDENTIFIER(0).GetText() + "\" no declarado." + showErrorPosition(context.IDENTIFIER(0).Symbol));
+                }
+
+                
+            }
+            else
             {
                 errorMsgs.Add("\n" +"Error de asignacion, identificador \"" + context.IDENTIFIER(0).GetText() + "\" no declarado." + showErrorPosition(context.IDENTIFIER(0).Symbol));
             }

@@ -64,8 +64,10 @@ namespace MiniCSharp.Interfaz
         {
             int g;
             {
-                g = 1;
+                
                 int k;
+                {
+                }
             }
 
 
@@ -73,10 +75,12 @@ namespace MiniCSharp.Interfaz
             t.Add((int?)1);
             jk kl = new jk();
             int ada = kl.x;
+            
             var p1 = "a";
             GetToken().GetType();
             Cscs(ada, ada);
             double? bnm = (int?)2.000;
+            bnm = -bnm + 2;
 
             if (2.000>1)
             {

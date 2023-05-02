@@ -26,10 +26,23 @@ class P
         int? o;
         double b;
         bool y;
+        {
+        int xc;
+            {
+            
+            {
+            int xc;
+            }
+            }
+        }
+        int lp;
+        y++;
+        b--;
         //---------- Initialize val ----------
         val     = new Tableg;
         x = new Table;
-        b       = (int)1+2.000;
+        b       = (int)2+2;
+        y= -y;
         i       = 2.99/2.90990*2+2.000;
         y= true;
         
