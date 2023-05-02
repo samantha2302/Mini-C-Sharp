@@ -215,6 +215,28 @@ namespace MiniCSharp.ANTLR4
                     
                     laTabla.DecrementarNivel();
                     Visit(context.block());
+
+                    for (int sum = 0; context.block().ChildCount > sum; sum++)
+                    {
+                        if (context.block().GetChild(sum).GetText().Contains("return"))
+                        {
+                            int result;
+                            result = (int) Visit(context.block().GetChild(sum));
+
+                            if ((idType != 0 && result != 0) || (idType != 1 && result != 1) ||
+                                (idType != 2 && result != 2) || (idType != 3 && result != 3) ||
+                                (idType != 4 && result != 4) || (idType != 5 && result != 5) ||
+                                (idType != 6 && result != 6) || (idType != 7 && result != 7) ||
+                                (idType != 8 && result != 8) || (idType != 9 && result != 9) ||
+                                (idType != 0 && result != 1) || (idType != 2 && result != 3) ||
+                                (idType != 4 && result != 5) || (idType != 6 && result != 7) ||
+                                (idType != 8 && result != 9) || (idType != 0 && result != 2) ||
+                                (idType != 1 && result != 3) || (idType != 0 && result != 3))
+                            {
+                                errorMsgs.Add("\n" + "Error de metodo, el metodo \"" + context.IDENTIFIER().GetText() + "\" devuelve un tipo diferente." + showErrorPosition(context.IDENTIFIER().Symbol));
+                            }
+                        }
+                    }
                     
                     ///TODO revisar porque no se sabe
 
@@ -458,11 +480,10 @@ namespace MiniCSharp.ANTLR4
         {
             Visit(context.condition());
             Visit(context.statement(0));
-            if (context.statement().Count() > 1)
+            if (context.ELSE() != null)
             {
                 Visit(context.statement(1));
             }
-
             return null;
         }
 
@@ -470,7 +491,7 @@ namespace MiniCSharp.ANTLR4
         {
             Visit(context.expr());
             
-            if (context.condition().ChildCount > 1)
+            if (context.condition() != null)
             {
                 Visit(context.condition());
             }
@@ -498,11 +519,12 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitReturnStatementAST(MiniCSharpParser.ReturnStatementASTContext context)
         {
-            if (context.expr().ChildCount > 1)
+            int result = -1;
+            if (context.expr()!= null)
             {
-                Visit(context.expr());
+                result = (int) Visit(context.expr());
             }
-            return null;
+            return result;
         }
 
         public override object VisitReadStatementAST(MiniCSharpParser.ReadStatementASTContext context)

@@ -33,9 +33,13 @@ namespace MiniCSharp.Interfaz
             return 1;
         }
         
-        public int ca(int i)
+        public double ca(int i)
         {
             int g;
+
+            int jk;
+
+            jk = 98;
             {
                 g = 1;
                 int k;
@@ -44,7 +48,7 @@ namespace MiniCSharp.Interfaz
             int ada = kl.x;
             var p1 = new MiClasePrueba().ra();
             GetToken().GetType();
-            return i;
+            return jk;
         }
         
         int Cscs(int i, int x)
@@ -58,7 +62,7 @@ namespace MiniCSharp.Interfaz
             int ada = kl.x;
             var p1 = new MiClasePrueba().ra();
             GetToken().GetType();
-            return i;
+            return 2+2;
         }
 
         void cscs(int i)

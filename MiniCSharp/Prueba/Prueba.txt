@@ -28,10 +28,16 @@ class P
         bool y;
         b = 2.000+1;
         
-        if ((int)2.00+1==1)
+        if (i+2.000==1)
         {
+        {
+        }
             
         }
+        
+        return b;
+        
+        bool m;
         
         
     }
