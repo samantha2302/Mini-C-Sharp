@@ -15,6 +15,7 @@ namespace MiniCSharp.ANTLR4
         private TablaSimbolos laTabla;
         public ArrayList<String> errorMsgs = new ArrayList<String>();
         public int designatorAssign;
+        public int MethodType;
         public AContextual(){
             this.laTabla = new TablaSimbolos();
             this.errorMsgs = new ArrayList<String>();
@@ -197,6 +198,7 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitMethodDeclAST(MiniCSharpParser.MethodDeclASTContext context)
         {
+            MethodType = -1;
             try {
                 IToken id = context.IDENTIFIER().Symbol;
                 int idType = 11;
@@ -216,27 +218,23 @@ namespace MiniCSharp.ANTLR4
                     laTabla.DecrementarNivel();
                     Visit(context.block());
 
-                    for (int sum = 0; context.block().ChildCount > sum; sum++)
-                    {
-                        if (context.block().GetChild(sum).GetText().Contains("return"))
-                        {
-                            int result;
-                            result = (int) Visit(context.block().GetChild(sum));
+                    bool comprobacion=false;
 
-                            if ((idType != 0 && result != 0) || (idType != 1 && result != 1) ||
-                                (idType != 2 && result != 2) || (idType != 3 && result != 3) ||
-                                (idType != 4 && result != 4) || (idType != 5 && result != 5) ||
-                                (idType != 6 && result != 6) || (idType != 7 && result != 7) ||
-                                (idType != 8 && result != 8) || (idType != 9 && result != 9) ||
-                                (idType != 0 && result != 1) || (idType != 2 && result != 3) ||
-                                (idType != 4 && result != 5) || (idType != 6 && result != 7) ||
-                                (idType != 8 && result != 9) || (idType != 0 && result != 2) ||
-                                (idType != 1 && result != 3) || (idType != 0 && result != 3))
-                            {
-                                errorMsgs.Add("\n" + "Error de metodo, el metodo \"" + context.IDENTIFIER().GetText() + "\" devuelve un tipo diferente." + showErrorPosition(context.IDENTIFIER().Symbol));
-                            }
+                    for (int sum1 = 0; context.block().ChildCount > sum1; sum1++)
+                    {
+                        string subcadenaReturn = new string(context.block().GetChild(sum1).GetText().Take(6).ToArray());
+                        //MessageBox.Show(subcadena);
+                        if (subcadenaReturn == "return")
+                        {
+                            comprobacion = true;
                         }
                     }
+
+                    if (comprobacion.Equals(false) && idType!=11)
+                    {
+                        errorMsgs.Add("\n" +"Error de metodo, el metodo " + context.IDENTIFIER().GetText() + " usa el tipo " + showType(idType) + " y debe retornar en el mismo nivel al menos una vez" + "."+ showErrorPosition(context.IDENTIFIER().Symbol));
+                    }
+
                     
                     ///TODO revisar porque no se sabe
 
@@ -513,17 +511,63 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitBreakStatementAST(MiniCSharpParser.BreakStatementASTContext context)
         {
-            //esto debe hacer algo
+            var currentContext = context.Parent;
+            int verificar = -1;
+            
+            while (currentContext != null)
+            {
+                if (currentContext is MiniCSharpParser.ForStatementASTContext || currentContext is MiniCSharpParser.WhileStatementASTContext)
+                {
+                    verificar = 1;
+                }
+                currentContext = currentContext.Parent;
+            }
+            
+            if (verificar == -1)
+            {
+                errorMsgs.Add("\n" + "Error de break, el \"" + context.BREAK().GetText() + "\" solo se puede usar en while o for." +
+                              showErrorPosition(context.BREAK().Symbol));
+            }
+
             return null;
         }
 
         public override object VisitReturnStatementAST(MiniCSharpParser.ReturnStatementASTContext context)
         {
             int result = -1;
+            
+            TablaSimbolos.Ident i = laTabla.buscarTokenMetodo();
+
+            int tipoID = i.GetType();
+
             if (context.expr()!= null)
             {
+                MethodType = tipoID;
                 result = (int) Visit(context.expr());
+
+                if ((result == 0 && MethodType == 0) || (result == 1 && MethodType == 1) ||
+                    (result == 2 && MethodType == 2) || (result == 3 && MethodType == 3) ||
+                    (result == 4 && MethodType == 4) || (result == 5 && MethodType == 5) ||
+                    (result == 6 && MethodType == 6) || (result == 7 && MethodType == 7) ||
+                    (result == 8 && MethodType == 8) || (result == 9 && MethodType == 9) ||
+                    (result == 0 && MethodType == 1) || (result == 2 && MethodType == 3) ||
+                    (result == 4 && MethodType == 5) || (result == 6 && MethodType == 7) ||
+                    (result == 8 && MethodType == 9) || (result == 0 && MethodType == 2) ||
+                    (result == 1 && MethodType == 3) || (result == 0 && MethodType == 3))
+                {
+                }
+                else
+                {
+                    errorMsgs.Add("\n" +"Error de metodo, el metodo " + i.GetToken().Text + " usa el tipo " + showType(MethodType) + " y se esta retornando el tipo " + showType(result) + "."+ showErrorPosition(context.expr().Start));
+                }
             }
+            
+            //int result = -1;
+            //if (context.expr()!= null)
+            //{
+                //result = (int) Visit(context.expr());
+            //}
+            MethodType = -1;
             return result;
         }
 
@@ -553,6 +597,7 @@ namespace MiniCSharp.ANTLR4
         public override object VisitBlockAST(MiniCSharpParser.BlockASTContext context)
         {
             laTabla.openScope();
+            
             for (int i = 0; context.varDecl().Count() > i; i++)
             {
                 Visit(context.varDecl(i));
@@ -668,6 +713,7 @@ namespace MiniCSharp.ANTLR4
             int result = -1;
 
             result = (int) Visit(context.term(0));
+            
 
             if (context.MINUS() != null)
             {
@@ -682,6 +728,13 @@ namespace MiniCSharp.ANTLR4
                           result != 3)
                 {
                     errorMsgs.Add("\n" +"Error de tipos, \""+ showType(result) + "\" no puede utilizar \"" + context.MINUS().GetText() + "\"." + showErrorPosition(context.term(0).Start));
+                }else if (MethodType != -1)
+                {
+                    if (MethodType != 0 && MethodType != 1 && MethodType != 2 &&
+                        MethodType != 3)
+                    {
+                        errorMsgs.Add("\n" +"Error de tipos, \""+ showType(MethodType) + "\" no puede utilizar \"" + context.MINUS().GetText() + "\"." + showErrorPosition(context.term(0).Start));
+                    }
                 }
 
             }
@@ -706,11 +759,11 @@ namespace MiniCSharp.ANTLR4
                     {
                         if (cast == 0)
                         {
-                            designatorAssign = 0;
+                            designatorAssign = 2;
                         }
                         else if (cast == 1)
                         {
-                            designatorAssign = 1;
+                            designatorAssign = 3;
                         }
                         else if (cast == 2)
                         {
@@ -751,6 +804,65 @@ namespace MiniCSharp.ANTLR4
                                       " no son compatibles para casting" + "." +
                                       showErrorPosition(context.term(0).Start));
                     }
+                }else if (MethodType!=-1)
+                {
+                    if ((cast == 0 && MethodType == 0) || (cast == 1 && MethodType == 1) ||
+                        (cast == 2 && MethodType == 2) || (cast == 3 && MethodType == 3) ||
+                        (cast == 4 && MethodType == 4) || (cast == 5 && MethodType == 5) ||
+                        (cast == 6 && MethodType == 6) || (cast == 7 && MethodType == 7) ||
+                        (cast == 8 && MethodType == 8) || (cast == 9 && MethodType == 9) ||
+                        (cast == 0 && MethodType == 1) || (cast == 2 && MethodType == 3) ||
+                        (cast == 4 && MethodType == 5) || (cast == 6 && MethodType == 7) ||
+                        (cast == 8 && MethodType == 9) || (cast == 0 && MethodType == 2) ||
+                        (cast == 1 && MethodType == 3) || (cast == 0 && MethodType == 3))
+                    {
+                        if (cast == 0)
+                        {
+                            MethodType = 2;
+                        }
+                        else if (cast == 1)
+                        {
+                            MethodType = 3;
+                        }
+                        else if (cast == 2)
+                        {
+                            MethodType = 2;
+                        }
+                        else if (cast == 3)
+                        {
+                            MethodType = 3;
+                        }
+                        else if (cast == 4)
+                        {
+                            MethodType = 4;
+                        }
+                        else if (cast == 5)
+                        {
+                            MethodType = 5;
+                        }
+                        else if (cast == 6)
+                        {
+                            MethodType = 6;
+                        }
+                        else if (cast == 7)
+                        {
+                            MethodType = 7;
+                        }
+                        else if (cast == 8)
+                        {
+                            MethodType = 8;
+                        }
+                        else if (cast == 9)
+                        {
+                            MethodType = 9;
+                        }
+                    }
+                    else
+                    {
+                        errorMsgs.Add("\n" + "Error de tipos, " + showType(cast) + " y " + showType(MethodType) +
+                                      " no son compatibles para casting" + "." +
+                                      showErrorPosition(context.term(0).Start));
+                    }
                 }
                 else
                 { 
@@ -766,11 +878,11 @@ namespace MiniCSharp.ANTLR4
                     {
                         if (cast == 0)
                         {
-                            result = 0;
+                            result = 2;
                         }
                         else if (cast == 1)
                         {
-                            result = 1;
+                            result = 3;
                         }
                         else if (cast == 2)
                         {
@@ -826,6 +938,17 @@ namespace MiniCSharp.ANTLR4
                                   " no puede asignarse con null" + "." +
                                   showErrorPosition(context.term(0).Start));
                 }
+                
+                if (MethodType != -1 && MethodType == 0 ||
+                    MethodType != -1 && MethodType == 2 ||
+                    MethodType != -1 && MethodType == 4 ||
+                    MethodType != -1 && MethodType == 6 ||
+                    MethodType != -1 && MethodType == 8)
+                {
+                    errorMsgs.Add("\n" + "Error de tipos, " + showType(MethodType) +
+                                  " no puede asignarse con null" + "." +
+                                  showErrorPosition(context.term(0).Start));
+                }
             }
             if (result !=21)
             {
@@ -837,25 +960,95 @@ namespace MiniCSharp.ANTLR4
                 {
                     designatorAssign--;
                 }
+                
+                if (MethodType != -1 && MethodType == 1 ||
+                    MethodType != -1 && MethodType == 3 ||
+                    MethodType != -1 && MethodType == 5 ||
+                    MethodType != -1 && MethodType == 7 ||
+                    MethodType != -1 && MethodType == 9)
+                {
+                    MethodType--;
+                }
             }
 
-            if (designatorAssign != -1 && designatorAssign != result &&
-                designatorAssign != 1 && designatorAssign != 3 && designatorAssign != 5 &&
-                designatorAssign != 7 && designatorAssign != 9)
+            if (designatorAssign != -1)
             {
-                errorMsgs.Add("\n" +"Error de tipos: \""+ showType(designatorAssign) + "\" y \"" + showType(result) + "\" no son compatibles." + showErrorPosition(context.term(0).Start));
+                if ((result == 0 && designatorAssign == 0) || (result == 1 && designatorAssign == 1) ||
+                    (result == 2 && designatorAssign == 2) || (result == 3 && designatorAssign == 3) ||
+                    (result == 4 && designatorAssign == 4) || (result == 5 && designatorAssign == 5) ||
+                    (result == 6 && designatorAssign == 6) || (result == 7 && designatorAssign == 7) ||
+                    (result == 8 && designatorAssign == 8) || (result == 9 && designatorAssign == 9) ||
+                    (result == 0 && designatorAssign == 1) || (result == 2 && designatorAssign == 3) ||
+                    (result == 4 && designatorAssign == 5) || (result == 6 && designatorAssign == 7) ||
+                    (result == 8 && designatorAssign == 9) || (result == 0 && designatorAssign == 2) ||
+                    (result == 1 && designatorAssign == 3) || (result == 0 && designatorAssign == 3))
+                {
+                }
+                else
+                {
+                    errorMsgs.Add("\n" +"Error de tipos: \""+ showType(designatorAssign) + "\" y \"" + showType(result) + "\" no son compatibles." + showErrorPosition(context.term(0).Start));
+                }
+            }else if (MethodType != -1)
+            {
+                if ((result == 0 && MethodType == 0) || (result == 1 && MethodType == 1) ||
+                    (result == 2 && MethodType == 2) || (result == 3 && MethodType == 3) ||
+                    (result == 4 && MethodType == 4) || (result == 5 && MethodType == 5) ||
+                    (result == 6 && MethodType == 6) || (result == 7 && MethodType == 7) ||
+                    (result == 8 && MethodType == 8) || (result == 9 && MethodType == 9) ||
+                    (result == 0 && MethodType == 1) || (result == 2 && MethodType == 3) ||
+                    (result == 4 && MethodType == 5) || (result == 6 && MethodType == 7) ||
+                    (result == 8 && MethodType == 9) || (result == 0 && MethodType == 2) ||
+                    (result == 1 && MethodType == 3) || (result == 0 && MethodType == 3))
+                {
+                }
+                else
+                {
+                    errorMsgs.Add("\n" +"Error de tipos: \""+ showType(MethodType) + "\" y \"" + showType(result) + "\" no son compatibles." + showErrorPosition(context.term(0).Start));
+                }
             }
+
+
 
             for (int i = 1; context.term().Count() > i; i++) {
                 op = (String) Visit(context.addop(i-1));
                 int type2 = (int) Visit(context.term(i));
-                if (designatorAssign != -1 && designatorAssign != type2)
+            if (designatorAssign != -1)
+            {
+                if ((type2 == 0 && designatorAssign == 0) || (type2 == 1 && designatorAssign == 1) ||
+                    (type2 == 2 && designatorAssign == 2) || (type2 == 3 && designatorAssign == 3) ||
+                    (type2 == 4 && designatorAssign == 4) || (type2 == 5 && designatorAssign == 5) ||
+                    (type2 == 6 && designatorAssign == 6) || (type2 == 7 && designatorAssign == 7) ||
+                    (type2 == 8 && designatorAssign == 8) || (type2 == 9 && designatorAssign == 9) ||
+                    (type2 == 0 && designatorAssign == 1) || (type2 == 2 && designatorAssign == 3) ||
+                    (type2 == 4 && designatorAssign == 5) || (type2 == 6 && designatorAssign == 7) ||
+                    (type2 == 8 && designatorAssign == 9) || (type2 == 0 && designatorAssign == 2) ||
+                    (type2 == 1 && designatorAssign == 3) || (type2 == 0 && designatorAssign == 3))
                 {
-                    errorMsgs.Add("\n" +"Error de tipos: \""+ showType(designatorAssign) + "\" y \"" + showType(type2) + "\" no son compatibles." + showErrorPosition(context.term(i).Start));
-                }else if (result != type2)
-                {
-                    errorMsgs.Add("\n" +"Error de tipos: \""+ showType(result) + "\" y \"" + showType(type2) + "\" no son compatibles." + showErrorPosition(context.term(i).Start));
+
                 }
+                else
+                {
+                    errorMsgs.Add("\n" +"Error de tipos: \""+ showType(designatorAssign) + "\" y \"" + showType(type2) + "\" no son compatibles." + showErrorPosition(context.term(0).Start));
+                }
+            }else if (MethodType != -1)
+            {
+                if ((type2 == 0 && MethodType == 0) || (type2 == 1 && MethodType == 1) ||
+                    (type2 == 2 && MethodType == 2) || (type2 == 3 && MethodType == 3) ||
+                    (type2 == 4 && MethodType == 4) || (type2 == 5 && MethodType == 5) ||
+                    (type2 == 6 && MethodType == 6) || (type2 == 7 && MethodType == 7) ||
+                    (type2 == 8 && MethodType == 8) || (type2 == 9 && MethodType == 9) ||
+                    (type2 == 0 && MethodType == 1) || (type2 == 2 && MethodType == 3) ||
+                    (type2 == 4 && MethodType == 5) || (type2 == 6 && MethodType == 7) ||
+                    (type2 == 8 && MethodType == 9) || (type2 == 0 && MethodType == 2) ||
+                    (type2 == 1 && MethodType == 3) || (type2 == 0 && MethodType == 3))
+                {
+
+                }
+                else
+                {
+                    errorMsgs.Add("\n" +"Error de tipos: \""+ showType(MethodType) + "\" y \"" + showType(type2) + "\" no son compatibles." + showErrorPosition(context.term(0).Start));
+                }
+            }
                 if (isMultitype(op)){ //el operador es multitipo (char, int ...)
                     if ((result==0&&type2==0) || (result==1&&type2==1)) {
                         result = type2; //si el operador recibiera dos tipos iguales pero devolviera otro, debe de cambiarse
@@ -914,12 +1107,45 @@ namespace MiniCSharp.ANTLR4
             for (int i = 1; context.factor().Count() > i; i++) {
                 op = (String) Visit(context.mulop(i-1));
                 int type2 = (int) Visit(context.factor(i));
-                
-                if (designatorAssign != -1 && designatorAssign != type2)
+
+                if (designatorAssign != -1)
                 {
-                    errorMsgs.Add("\n" +"Error de tipos: \""+ showType(designatorAssign) + "\" y \"" + showType(type2) + "\" no son compatibles." + showErrorPosition(context.factor(i).Start));
+                    if ((type2 == 0 && designatorAssign == 0) || (type2 == 1 && designatorAssign == 1) ||
+                        (type2 == 2 && designatorAssign == 2) || (type2 == 3 && designatorAssign == 3) ||
+                        (type2 == 4 && designatorAssign == 4) || (type2 == 5 && designatorAssign == 5) ||
+                        (type2 == 6 && designatorAssign == 6) || (type2 == 7 && designatorAssign == 7) ||
+                        (type2 == 8 && designatorAssign == 8) || (type2 == 9 && designatorAssign == 9) ||
+                        (type2 == 0 && designatorAssign == 1) || (type2 == 2 && designatorAssign == 3) ||
+                        (type2 == 4 && designatorAssign == 5) || (type2 == 6 && designatorAssign == 7) ||
+                        (type2 == 8 && designatorAssign == 9) || (type2 == 0 && designatorAssign == 2) ||
+                        (type2 == 1 && designatorAssign == 3) || (type2 == 0 && designatorAssign == 3))
+                    {
+
+                    }
+                    else
+                    {
+                        errorMsgs.Add("\n" +"Error de tipos: \""+ showType(designatorAssign) + "\" y \"" + showType(type2) + "\" no son compatibles." + showErrorPosition(context.factor(i).Start));
+                    }
+                }else if (MethodType != -1)
+                {
+                    if ((type2 == 0 && MethodType == 0) || (type2 == 1 && MethodType == 1) ||
+                        (type2 == 2 && MethodType == 2) || (type2 == 3 && MethodType == 3) ||
+                        (type2 == 4 && MethodType == 4) || (type2 == 5 && MethodType == 5) ||
+                        (type2 == 6 && MethodType == 6) || (type2 == 7 && MethodType == 7) ||
+                        (type2 == 8 && MethodType == 8) || (type2 == 9 && MethodType == 9) ||
+                        (type2 == 0 && MethodType == 1) || (type2 == 2 && MethodType == 3) ||
+                        (type2 == 4 && MethodType == 5) || (type2 == 6 && MethodType == 7) ||
+                        (type2 == 8 && MethodType == 9) || (type2 == 0 && MethodType == 2) ||
+                        (type2 == 1 && MethodType == 3) || (type2 == 0 && MethodType == 3))
+                    {
+
+                    }
+                    else
+                    {
+                        errorMsgs.Add("\n" +"Error de tipos: \""+ showType(MethodType) + "\" y \"" + showType(type2) + "\" no son compatibles." + showErrorPosition(context.factor(i).Start));
+                    }
                 }
-                
+
                 if (isMultitype(op)){ //el operador es multitipo (char, int ...)
                     if ((result==0&&type2==0) || (result==1&&type2==1)) {
                         result = type2; //si el operador recibiera dos tipos iguales pero devolviera otro, debe de cambiarse

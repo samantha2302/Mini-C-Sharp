@@ -9,8 +9,13 @@ namespace MiniCSharp.Interfaz
         public int ra ()
         {
             int x, i;
+            double po;
+            po = 1;
             x = 1;
-            return x;
+            x = (int)po;
+            double io;
+            io = (int)2.000 + 2;
+            return (int)2.00+1;
         }
         }
 
@@ -20,6 +25,17 @@ namespace MiniCSharp.Interfaz
 
         public int GetToken()
         {
+
+            for (int sum = 0; 1 > sum; sum++)
+            {
+                {
+                    {
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
             int x;
             {
                 x = 1;
@@ -27,8 +43,12 @@ namespace MiniCSharp.Interfaz
                 if (x == 1)
                 {
                     x = 1;
+                    {
+                        {
+                            return x;
+                        }
+                    }
                 }
-                return x;
             }
             return 1;
         }

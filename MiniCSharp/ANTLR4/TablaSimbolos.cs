@@ -135,32 +135,13 @@ namespace MiniCSharp.ANTLR4
             }
             return -1;
         }
-
-        public int buscarMetodo(string nombre, int tipo)
-        {
-            foreach (Object id in tabla)
-            {
-                if (((Ident)id).GetToken().Text.Equals(nombre))
-                {
-                    if (((Ident)id).GetType().Equals(tipo))
-                    {
-                        return ((Ident)id).GetNivel();
-                    }
-                }
-            }
-            return -1;
-        }
         
-        public IToken buscarMetodoToken(string nombre, int tipo)
-        {
-            foreach (Object id in tabla)
-            {
-                if (((Ident)id).GetToken().Text.Equals(nombre))
+        public Ident buscarTokenMetodo(){
+            foreach (Object id in tabla){
+                if (((Ident)id).GetIsMethod().Equals(true))
                 {
-                    if (((Ident)id).GetType().Equals(tipo))
-                    {
-                        return ((Ident)id).GetToken();
-                    }
+                    //MessageBox.Show(((Ident)id).GetToken().Text);
+                    return (Ident)id;
                 }
             }
             return null;

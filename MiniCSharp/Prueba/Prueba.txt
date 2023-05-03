@@ -20,25 +20,33 @@ class P
      {
         int x;
      }
-  void Main ()
+  int Main ()
     {
         int x, i;
         int? o;
         double b;
         bool y;
-        b = 2.000+1;
+        x= (int)y;
+        {
+           {
+           }
+        }
+                
         
-        if (i+2.000==1)
+        x=(int)2+2/2*2+2+3.0000-5+4/2.0000*2.000/2.0000*2;
+        if (2.0000+1==1)
+        {
+                return (int)2.0000+2.000;
         {
         {
+        }
         }
             
         }
         
-        return b;
+        return y;
         
         bool m;
-        
         
     }
 }
