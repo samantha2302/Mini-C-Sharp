@@ -137,6 +137,21 @@ namespace MiniCSharp.ANTLR4
             return null;
         }
         
+        public List<int> obtenerTiposMetodosVariables(int nivel)
+        {
+            List<int> resul = new List<int>();
+            foreach (Object id in tabla){
+                if (((Ident)id).GetNivel().Equals(nivel)){
+                    if (((Ident)id).GetIsVarMethod().Equals(true))
+                    {
+                        resul.Add(((Ident)id).GetType());
+                    }
+                }
+            }
+
+            return resul;
+        }
+        
         public int buscarNivelMetodo(){
             foreach (Object id in tabla){
                 if (((Ident)id).GetIsMethod().Equals(true))
@@ -189,7 +204,7 @@ namespace MiniCSharp.ANTLR4
             builder.Append("\n" +"----- INICIO TABLA ------");
             for (int i = 0; i < tabla.Count(); i++) {
                 IToken s = (IToken) ((Ident) tabla.ElementAt(i)).GetToken();
-                builder.Append("\n" + "Nombre: " + s.Text + " - " + ((Ident) tabla.ElementAt(i)).GetNivel() + " - " + ((Ident) tabla.ElementAt(i)).GetType() + " - " + ((Ident) tabla.ElementAt(i)).GetIsMethod());
+                builder.Append("\n" + "Nombre: " + s.Text + " - " + ((Ident) tabla.ElementAt(i)).GetNivel() + " - " + ((Ident) tabla.ElementAt(i)).GetType() + " - " + ((Ident) tabla.ElementAt(i)).GetIsMethod() + " - " + ((Ident) tabla.ElementAt(i)).GetIsVarMethod());
             }
             builder.Append("\n" +"----- FIN TABLA ------");
             return builder.ToString();

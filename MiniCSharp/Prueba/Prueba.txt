@@ -16,9 +16,9 @@ class P
      int m;
      int p;
      
-   int prueba ()
+   int prueba (int x, double b)
      {
-        int x;
+        int o;
      }
   int Main ()
     {
@@ -28,7 +28,7 @@ class P
         bool y;
         x= (int)y;
         
-        prueba (1);
+        prueba (1,2,3,4);
         
         {
            {
