@@ -125,6 +125,18 @@ namespace MiniCSharp.ANTLR4
             return null;
         }
         
+        public Ident buscarTokenMetodoNombre(String nombre){
+            foreach (Object id in tabla){
+                if (((Ident)id).GetToken().Text.Equals(nombre)){
+                    if (((Ident)id).GetIsMethod().Equals(true))
+                    {
+                        return (Ident)id;
+                    }
+                }
+            }
+            return null;
+        }
+        
         public int buscarNivelMetodo(){
             foreach (Object id in tabla){
                 if (((Ident)id).GetIsMethod().Equals(true))

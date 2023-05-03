@@ -66,7 +66,7 @@ namespace MiniCSharp.Interfaz
             }
             jk kl = new jk();
             int ada = kl.x;
-            var p1 = new MiClasePrueba().ra();
+            int p1 = new MiClasePrueba().ra() +2;
             GetToken().GetType();
             return jk;
         }

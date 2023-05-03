@@ -450,7 +450,22 @@ namespace MiniCSharp.ANTLR4
             
                 if (context.actPars() != null)
                 {
-                    Visit(context.actPars());
+                    TablaSimbolos.Ident i = laTabla.buscarTokenMetodoNombre(context.designator().GetText());
+                    TablaSimbolos.Ident metodoActual = laTabla.buscarTokenMetodo();
+
+                    //MessageBox.Show(metodoActual.GetToken().ToString());
+
+                    if (i.GetToken().ToString() == metodoActual.GetToken().ToString())
+                    {
+                        errorMsgs.Add("\n" +"Error de metodo, el metodo \""+ context.designator().GetText() + "\" no puede utilizarse dentro del mismo metodo." + showErrorPosition(context.designator().Start));
+                    }else if (i.GetToken().ToString() != metodoActual.GetToken().ToString())
+                    {
+                        MessageBox.Show("ad");
+                    }
+                    else
+                    {
+                        errorMsgs.Add("\n" +"Error de metodo, el identificador \""+ context.designator().GetText() + "\" no puede utilizar \"" + context.LPAREN().GetText() + "\" \""+ context.RPAREN().GetText() + "\"." + showErrorPosition(context.designator().Start));
+                    }
                 }
 
 

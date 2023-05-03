@@ -27,6 +27,9 @@ class P
         double b;
         bool y;
         x= (int)y;
+        
+        prueba (1);
+        
         {
            {
            }
