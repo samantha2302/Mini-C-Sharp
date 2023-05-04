@@ -28,7 +28,7 @@ class P
         bool y;
         x= (int)y;
         
-        prueba (1,2,3,4);
+        prueba (2,2);
         
         {
            {

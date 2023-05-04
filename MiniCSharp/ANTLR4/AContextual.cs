@@ -420,6 +420,8 @@ namespace MiniCSharp.ANTLR4
                 {
                     designatorAssign = (int)Visit(context.designator());
                     Visit(context.expr());
+                    
+                    designatorAssign = -1;
                     /*
                     int tipoExpr = 1;
                     tipoExpr= (int) Visit(context.expr());
@@ -439,6 +441,8 @@ namespace MiniCSharp.ANTLR4
                     {
                         errorMsgs.Add("\n" +"Error de tipos, \""+ showType(designatorAssign) + "\" no puede utilizar \"" + context.INCREMENT().GetText() + "\"." + showErrorPosition(context.designator().Start));
                     }
+                    
+                    designatorAssign = -1;
                 }
                 
                 if (context.DECREMENT() != null)
@@ -449,6 +453,8 @@ namespace MiniCSharp.ANTLR4
                     {
                         errorMsgs.Add("\n" +"Error de tipos, \""+ showType(designatorAssign) + "\" no puede utilizar \"" + context.DECREMENT().GetText() + "\"." + showErrorPosition(context.designator().Start));
                     }
+                    
+                    designatorAssign = -1;
                 }
             
                 if (context.LPAREN() != null)
@@ -463,36 +469,72 @@ namespace MiniCSharp.ANTLR4
                         errorMsgs.Add("\n" +"Error de metodo, el metodo \""+ context.designator().GetText() + "\" no puede utilizarse dentro del mismo metodo." + showErrorPosition(context.designator().Start));
                     }else if (i.GetToken().ToString() != metodoActual.GetToken().ToString())
                     {
-
-                        int verificar = i.GetType();
-
-
                         List<int> resul = laTabla.obtenerTiposMetodosVariables(i.GetNivel());
                         resul.Reverse();
 
-                        designatorAssign = i.GetType();
+                        int cantidad = 0;
+                        
+                        for (int sum2 = 0; context.actPars().ChildCount > sum2; sum2++)
+                        {
+                            if (context.actPars().GetChild(sum2).GetText() != ",")
+                            {
+                                cantidad++;
+                            }
 
-                        if (context.actPars().ChildCount != resul.Count())
+                        }
+
+                        if (cantidad != resul.Count())
                         {
                             errorMsgs.Add("\n" +"Error de metodo, el identificador \""+ i.GetToken().Text + "\" recibio mas parametros de los solicitados." + showErrorPosition(i.GetToken()));
                         }
-
-                        for (int sum2 = 0; context.actPars().ChildCount > sum2; sum2++)
+                        else
                         {
-                            MessageBox.Show(context.actPars().GetChild(sum2).GetText());
+                            int suma=0;
+                            for (int sum2 = 0; context.actPars().ChildCount > sum2; sum2++)
+                            {
 
-                        }
+                                if (context.actPars().GetChild(sum2).GetText() != ",")
+                                {
+                                    int result;
+                                    designatorAssign = resul[suma];
+                                    MessageBox.Show(designatorAssign.ToString());
+                                    result = (int)Visit(context.actPars().GetChild(sum2));
+                                    if ((result == 0 && designatorAssign == 0) || (result == 1 && designatorAssign == 1) ||
+                                        (result == 2 && designatorAssign == 2) || (result == 3 && designatorAssign == 3) ||
+                                        (result == 4 && designatorAssign == 4) || (result == 5 && designatorAssign == 5) ||
+                                        (result == 6 && designatorAssign == 6) || (result == 7 && designatorAssign == 7) ||
+                                        (result == 8 && designatorAssign == 8) || (result == 9 && designatorAssign == 9) ||
+                                        (result == 0 && designatorAssign == 1) || (result == 2 && designatorAssign == 3) ||
+                                        (result == 4 && designatorAssign == 5) || (result == 6 && designatorAssign == 7) ||
+                                        (result == 8 && designatorAssign == 9) || (result == 0 && designatorAssign == 2) ||
+                                        (result == 1 && designatorAssign == 3) || (result == 0 && designatorAssign == 3))
+                                    {
+                                    }
+                                    else
+                                    {
+                                        errorMsgs.Add("\n" +"Error de metodo, uno de los parametros requiere \""+ showType(designatorAssign) + "\" y se recibio \"" + showType(result) + "." + showErrorPosition(context.designator().Start));
+                                    }
+
+                                    suma++;
+                                }
+
+                            }
                         
-                        //MessageBox.Show(resul.Count().ToString());
-                        for (int sum1 = 0; resul.Count() > sum1; sum1++)
-                        {
-                            MessageBox.Show(resul[sum1].ToString());
+                            //MessageBox.Show(resul.Count().ToString());
+                            for (int sum1 = 0; resul.Count() > sum1; sum1++)
+                            {
+                                //MessageBox.Show(resul[sum1].ToString());
+                            } 
                         }
+
+
                     }
                     else
                     {
                         errorMsgs.Add("\n" +"Error de metodo, el identificador \""+ context.designator().GetText() + "\" no puede utilizar \"" + context.LPAREN().GetText() + "\" \""+ context.RPAREN().GetText() + "\"." + showErrorPosition(context.designator().Start));
                     }
+                    
+                    designatorAssign = -1;
                 }
 
 
@@ -1116,8 +1158,6 @@ namespace MiniCSharp.ANTLR4
                     }
                 }
             }
-
-            designatorAssign = -1;
             return result;
             
             /*
