@@ -462,7 +462,10 @@ namespace MiniCSharp.ANTLR4
                     TablaSimbolos.Ident i = laTabla.buscarTokenMetodoNombre(context.designator().GetText());
                     TablaSimbolos.Ident metodoActual = laTabla.buscarTokenMetodo();
 
-                    //MessageBox.Show(metodoActual.GetToken().ToString());
+                    if (i==null)
+                    {
+                        errorMsgs.Add("\n" +"Error de metodo, el identificador \""+ context.designator().GetText() + "\" no puede utilizar \"" + context.LPAREN().GetText() + "\" \""+ context.RPAREN().GetText() + "\", no es un metodo." + showErrorPosition(context.designator().Start));
+                    }
 
                     if (i.GetToken().ToString() == metodoActual.GetToken().ToString())
                     {
@@ -497,7 +500,6 @@ namespace MiniCSharp.ANTLR4
                                 {
                                     int result;
                                     designatorAssign = resul[suma];
-                                    MessageBox.Show(designatorAssign.ToString());
                                     result = (int)Visit(context.actPars().GetChild(sum2));
                                     if ((result == 0 && designatorAssign == 0) || (result == 1 && designatorAssign == 1) ||
                                         (result == 2 && designatorAssign == 2) || (result == 3 && designatorAssign == 3) ||
@@ -512,28 +514,16 @@ namespace MiniCSharp.ANTLR4
                                     }
                                     else
                                     {
-                                        errorMsgs.Add("\n" +"Error de metodo, uno de los parametros requiere \""+ showType(designatorAssign) + "\" y se recibio \"" + showType(result) + "." + showErrorPosition(context.designator().Start));
+                                        errorMsgs.Add("\n" +"Error de metodo, uno de los parametros requiere \""+ showType(designatorAssign) + "\" y se recibio \"" + showType(result) + "\" + ." + showErrorPosition(context.designator().Start));
                                     }
 
                                     suma++;
                                 }
 
                             }
-                        
-                            //MessageBox.Show(resul.Count().ToString());
-                            for (int sum1 = 0; resul.Count() > sum1; sum1++)
-                            {
-                                //MessageBox.Show(resul[sum1].ToString());
-                            } 
                         }
 
-
                     }
-                    else
-                    {
-                        errorMsgs.Add("\n" +"Error de metodo, el identificador \""+ context.designator().GetText() + "\" no puede utilizar \"" + context.LPAREN().GetText() + "\" \""+ context.RPAREN().GetText() + "\"." + showErrorPosition(context.designator().Start));
-                    }
-                    
                     designatorAssign = -1;
                 }
 
@@ -1274,7 +1264,84 @@ namespace MiniCSharp.ANTLR4
         public override object VisitDesignatorFactorAST(MiniCSharpParser.DesignatorFactorASTContext context)
         {
             int result = -1;
-            result= (int) Visit(context.designator());
+            
+            if (context.LPAREN() == null)
+            {
+                result= (int) Visit(context.designator());
+            }
+
+            if (context.LPAREN() != null)
+            {
+                TablaSimbolos.Ident i = laTabla.buscarTokenMetodoNombre(context.designator().GetText());
+                TablaSimbolos.Ident metodoActual = laTabla.buscarTokenMetodo();
+                
+                if (i==null)
+                {
+                    errorMsgs.Add("\n" +"Error de metodo, el identificador \""+ context.designator().GetText() + "\" no puede utilizar \"" + context.LPAREN().GetText() + "\" \""+ context.RPAREN().GetText() + "\", no es un metodo." + showErrorPosition(context.designator().Start));
+                }
+
+                if (i.GetToken().ToString() == metodoActual.GetToken().ToString())
+                {
+                    errorMsgs.Add("\n" +"Error de metodo, el metodo \""+ context.designator().GetText() + "\" no puede utilizarse dentro del mismo metodo." + showErrorPosition(context.designator().Start));
+                }else if (i.GetToken().ToString() != metodoActual.GetToken().ToString())
+                {
+                    List<int> resul = laTabla.obtenerTiposMetodosVariables(i.GetNivel());
+                    resul.Reverse();
+
+                    int cantidad = 0;
+                    
+                    for (int sum2 = 0; context.actPars().ChildCount > sum2; sum2++)
+                    {
+                        if (context.actPars().GetChild(sum2).GetText() != ",")
+                        {
+                            cantidad++;
+                        }
+
+                    }
+
+                    if (cantidad != resul.Count())
+                    {
+                        errorMsgs.Add("\n" +"Error de metodo, el identificador \""+ i.GetToken().Text + "\" recibio mas parametros de los solicitados." + showErrorPosition(i.GetToken()));
+                    }
+                    else
+                    {
+                        int suma=0;
+                        for (int sum2 = 0; context.actPars().ChildCount > sum2; sum2++)
+                        {
+
+                            if (context.actPars().GetChild(sum2).GetText() != ",")
+                            {
+                                int result2;
+                                methodType = resul[suma];
+                                result2 = (int)Visit(context.actPars().GetChild(sum2));
+                                if ((result2 == 0 && methodType == 0) || (result2 == 1 && methodType == 1) ||
+                                    (result2 == 2 && methodType == 2) || (result2 == 3 && methodType == 3) ||
+                                    (result2 == 4 && methodType == 4) || (result2 == 5 && methodType == 5) ||
+                                    (result2 == 6 && methodType == 6) || (result2 == 7 && methodType == 7) ||
+                                    (result2 == 8 && methodType == 8) || (result2 == 9 && methodType == 9) ||
+                                    (result2 == 0 && methodType == 1) || (result2 == 2 && methodType == 3) ||
+                                    (result2 == 4 && methodType == 5) || (result2 == 6 && methodType == 7) ||
+                                    (result2 == 8 && methodType == 9) || (result2 == 0 && methodType == 2) ||
+                                    (result2 == 1 && methodType == 3) || (result2 == 0 && methodType == 3))
+                                {
+                                }
+                                else
+                                {
+                                    errorMsgs.Add("\n" +"Error de metodo, uno de los parametros requiere \""+ showType(methodType) + "\" y se recibio \"" + showType(result2) + "\" + ." + showErrorPosition(context.designator().Start));
+                                }
+
+                                suma++;
+                            }
+
+                        }
+                    }
+
+
+                }
+
+                result = i.GetType();
+                methodType = -1;
+            }
             return result;
         }
 
