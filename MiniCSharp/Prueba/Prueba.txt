@@ -28,6 +28,8 @@ class P
         bool y;
         x= prueba (2,2);
         
+        list?<int> uwu, dxd;
+        
         prueba (2,2);
         
         {

@@ -15,6 +15,9 @@ namespace MiniCSharp.Interfaz
             x = (int)po;
             double io;
             io = (int)2.000 + 2;
+
+            List<bool> por = new List<bool>();
+
             return (int)2.00+1;
         }
         }

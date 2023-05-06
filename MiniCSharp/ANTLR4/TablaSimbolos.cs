@@ -14,9 +14,12 @@ namespace MiniCSharp.ANTLR4
 
         public class Ident{
             IToken tok;
-            int type; //esto probablemente cambie a un tipo más estructurado
+            
+            int type;
+            
+            int secondType;
+            
             int nivel;
-            int valor;
 
             bool isMethod;
 
@@ -26,11 +29,11 @@ namespace MiniCSharp.ANTLR4
             
             IToken instanceToken;
 
-            public Ident(IToken t, int tp, bool ism, bool isc, bool isvm, IToken iT){
+            public Ident(IToken t, int tp, int stp, bool ism, bool isc, bool isvm, IToken iT){
                 tok = t;
                 type = tp;
+                secondType = stp;
                 nivel=nivelActual;
-                valor = 0;
                 isMethod=ism;
                 isClass = isc;
                 isVarMethod = isvm;
@@ -42,9 +45,40 @@ namespace MiniCSharp.ANTLR4
                 return tok;
             }
             
+            public int GetType()
+            {
+                return type;
+            }
+            
+            public int GetSecondType()
+            {
+                return secondType;
+            }
+            
+            
+            public int GetNivel()
+            {
+                return nivel;
+            }
+            
+            public int GetNivelActual()
+            {
+                return nivelActual;
+            }
+            
+            public void SetNivelActual(int nivel_actual)
+            {
+                nivelActual = nivel_actual;
+            }
+            
             public bool GetIsMethod()
             {
                 return isMethod;
+            }
+            
+            public bool GetIsClass()
+            {
+                return isClass;
             }
             
             public bool GetIsVarMethod()
@@ -52,28 +86,9 @@ namespace MiniCSharp.ANTLR4
                 return isVarMethod;
             }
             
-            public int GetType()
+            public IToken GetInstanceToken()
             {
-                return type;
-            }
-
-            public int GetNivelActual()
-            {
-                return nivelActual;
-            }
-
-            public void SetNivelActual(int nivel_actual)
-            {
-                nivelActual = nivel_actual;
-            }
-            
-            public int GetNivel()
-            {
-                return nivel;
-            }
-
-            public void setValue(int v){
-                valor = v;
+                return instanceToken;
             }
 
         }
@@ -83,9 +98,9 @@ namespace MiniCSharp.ANTLR4
             nivelActual = -1;
         }
 
-        public void insertar(IToken t, int tp, bool ism, bool isc, bool isvm, IToken iT)
+        public void insertar(IToken t, int tp,int stp, bool ism, bool isc, bool isvm, IToken iT)
         {
-            Ident i = new Ident(t,tp,ism,isc, isvm, iT);
+            Ident i = new Ident(t,tp,stp,ism,isc, isvm, iT);
             tabla.AddFirst(i);
         }
 
@@ -204,7 +219,8 @@ namespace MiniCSharp.ANTLR4
             builder.Append("\n" +"----- INICIO TABLA ------");
             for (int i = 0; i < tabla.Count(); i++) {
                 IToken s = (IToken) ((Ident) tabla.ElementAt(i)).GetToken();
-                builder.Append("\n" + "Nombre: " + s.Text + " - " + ((Ident) tabla.ElementAt(i)).GetNivel() + " - " + ((Ident) tabla.ElementAt(i)).GetType() + " - " + ((Ident) tabla.ElementAt(i)).GetIsMethod() + " - " + ((Ident) tabla.ElementAt(i)).GetIsVarMethod());
+                builder.Append("\n" + "Nombre: " + s.Text + " -- Tipo: " + ((Ident) tabla.ElementAt(i)).GetType() + " -- SegundoTipo: " + ((Ident) tabla.ElementAt(i)).GetSecondType() + " -- Nivel: " + ((Ident) tabla.ElementAt(i)).GetNivel() + " -- EsMetodo: " + ((Ident) tabla.ElementAt(i)).GetIsMethod());
+                builder.Append("\n" + "EsClase: " + ((Ident) tabla.ElementAt(i)).GetIsClass()+ " -- EsVarMetodo: " + ((Ident) tabla.ElementAt(i)).GetIsVarMethod() + " -- Nombre Instancia : " + ((Ident) tabla.ElementAt(i)).GetInstanceToken() + "\n");
             }
             builder.Append("\n" +"----- FIN TABLA ------");
             return builder.ToString();

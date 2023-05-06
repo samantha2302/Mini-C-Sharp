@@ -27,6 +27,7 @@ USING: 'using';
 // Tipos
 NULL: 'null';
 QMARK: '?';
+//LIST: 'List';
 //INTQ: 'int?';
 //DOUBLE: 'double';
 //DOUBLEQ: 'double?';
