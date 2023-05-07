@@ -9,6 +9,13 @@ namespace MiniCSharp.Interfaz
         public int ra ()
         {
             int x, i;
+            char bn; 
+            int?[] staticIntArray = new int?[3];
+
+            i = (int)2.00+1;
+            
+            staticIntArray[(int)2.00+1] = (int?)2.00+1;
+
             double po;
             po = 1;
             x = 1;

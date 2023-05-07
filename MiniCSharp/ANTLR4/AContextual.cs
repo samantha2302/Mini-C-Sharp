@@ -18,6 +18,7 @@ namespace MiniCSharp.ANTLR4
         public int designatorAssign;
         public int methodType;
         public bool isList;
+        public bool isArray;
         public AContextual(){
             this.laTabla = new TablaSimbolos();
             this.errorMsgs = new ArrayList<String>();
@@ -54,6 +55,7 @@ namespace MiniCSharp.ANTLR4
                 case 10: return "list";
                 case 11: return "void";
                 case 12: return "class";
+                case 13: return "array";
                 case 21: return "null";
                 default: return "none";
             }
@@ -136,9 +138,14 @@ namespace MiniCSharp.ANTLR4
                         }
                     }
 
-                    if (verificar == -1 && isList.Equals(false)&& idType != -1)
+                    if (verificar == -1 && isList.Equals(false)&& isArray.Equals(false) && idType != -1)
                     {
                         laTabla.insertar(id, idType,-1, false, false, false, null);
+                    }
+                    
+                    if (verificar == -1 && isArray.Equals(true)&& idType != -1)
+                    {
+                        laTabla.insertar(id, 13,idType, false, false, false, null);
                     }
 
                     if (verificar == -1 && isList.Equals(true) && idType != -1)
@@ -169,9 +176,14 @@ namespace MiniCSharp.ANTLR4
                             }
                         }
 
-                        if (verificar == -1 && isList.Equals(false)&& idType != -1)
+                        if (verificar == -1 && isList.Equals(false)&& isArray.Equals(false) && idType != -1)
                         {
                             laTabla.insertar(idN, idType,-1, false, false, false, null);
+                        }
+                        
+                        if (verificar == -1 && isArray.Equals(true)&& idType != -1)
+                        {
+                            laTabla.insertar(idN, 13,idType, false, false, false, null);
                         }
                         
                         if (verificar == -1 && isList.Equals(true)&& idType != -1)
@@ -290,8 +302,9 @@ namespace MiniCSharp.ANTLR4
         {
             int result=-1;
             isList = false;
+            isArray = false;
 
-            if (context.QMARK(0) == null && context.QMARK(1) == null && context.IDENTIFIER(0).GetText() != "list" && 
+            if (context.QMARK(0) == null && context.IDENTIFIER(0).GetText() != "list" && 
                 context.LBRACK() == null && context.RBRACK() == null && context.LESS_THAN()== null &&
                 context.GREATER_THAN() == null)
             {
@@ -444,7 +457,88 @@ namespace MiniCSharp.ANTLR4
                                   "\" debe hacerlo dentro de \"" + context.LESS_THAN().GetText() + "\" y el \"" +
                                   context.GREATER_THAN().GetText() + "\" ." + showErrorPosition(context.IDENTIFIER(1).Symbol));
                 }
-            } else
+            }else if (context.QMARK(0) == null && 
+                      context.LBRACK() != null && context.RBRACK() != null && context.LESS_THAN()== null &&
+                      context.GREATER_THAN() == null)
+            {
+                if (context.IDENTIFIER(0).GetText().Equals("int"))
+                {
+                    result = 0;
+                    isArray = true;
+                }
+                else if (context.IDENTIFIER(0).GetText().Equals("double"))
+                {
+                    result = 2;
+                    isArray = true;
+                }
+                else if (context.IDENTIFIER(0).GetText().Equals("char"))
+                {
+                    result = 4;
+                    isArray = true;
+                }
+                else if (context.IDENTIFIER(0).GetText().Equals("string"))
+                {
+                    result = 6;
+                    isArray = true;
+                }
+                else if (context.IDENTIFIER(0).GetText().Equals("bool"))
+                {
+                    result = 8;
+                    isArray = true;
+                }
+                else
+                {
+                    errorMsgs.Add("\n" + "Error de tipos, tipo \"" + context.IDENTIFIER(0).GetText() +
+                                  "\" no es un tipo valido." + showErrorPosition(context.IDENTIFIER(0).Symbol));
+                }
+                
+            }else if (context.QMARK(0) != null &&
+                      context.LBRACK() != null && context.RBRACK() != null && context.LESS_THAN() == null &&
+                      context.GREATER_THAN() == null)
+            {
+                if (context.IDENTIFIER(0).GetText().Equals("int"))
+                {
+
+                    result = 1;
+                    isArray = true;
+                }
+                else if (context.IDENTIFIER(0).GetText().Equals("double"))
+                {
+
+                    result = 3;
+                    isArray = true;
+
+                }
+                else if (context.IDENTIFIER(0).GetText().Equals("char"))
+                {
+
+                    result = 5;
+                    isArray = true;
+
+                }
+                else if (context.IDENTIFIER(0).GetText().Equals("string"))
+                {
+
+                    result = 7;
+                    isArray = true;
+
+                }
+                else if (context.IDENTIFIER(0).GetText().Equals("bool"))
+                {
+
+                    result = 9;
+                    isArray = true;
+
+                }
+                else
+                {
+                    errorMsgs.Add("\n" + "Error de tipos, tipo \"" + context.IDENTIFIER(1).GetText() +
+                                  "\" no es un tipo valido." + showErrorPosition(context.IDENTIFIER(1).Symbol));
+                }
+
+
+            }
+            else
             {
                 errorMsgs.Add("\n" + "Error de tipos, tipo \"" + context.IDENTIFIER(0).GetText() +
                               "\" no es un tipo valido." + showErrorPosition(context.IDENTIFIER(1).Symbol));
@@ -1099,7 +1193,10 @@ namespace MiniCSharp.ANTLR4
                     (result == 0 && designatorAssign == 1) || (result == 2 && designatorAssign == 3) ||
                     (result == 4 && designatorAssign == 5) || (result == 6 && designatorAssign == 7) ||
                     (result == 8 && designatorAssign == 9) || (result == 0 && designatorAssign == 2) ||
-                    (result == 1 && designatorAssign == 3) || (result == 0 && designatorAssign == 3))
+                    (result == 1 && designatorAssign == 3) || (result == 0 && designatorAssign == 3) ||
+                    (result == 21 && designatorAssign == 1) || (result == 21 && designatorAssign == 3) || 
+                    (result == 21 && designatorAssign == 5) || (result == 21 && designatorAssign == 7) ||
+                    (result == 21 && designatorAssign == 9) )
                 {
                 }
                 else
@@ -1436,50 +1533,90 @@ namespace MiniCSharp.ANTLR4
             int result =-1;
             TablaSimbolos.Ident i = null;
 
-            if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) != -1 ||
+            if (context.DOT(0) == null && context.LBRACK(0) == null && context.RBRACK(0) == null)
+            {
+                if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) != -1 ||
                 laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.buscarNivelMetodo()) != -1 ||
                 laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), 0) != -1)
-            {
-                if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) != -1)
                 {
-                    i = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual());
-                }
-                else if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.buscarNivelMetodo()) != -1)
-                {
-                    i = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), laTabla.buscarNivelMetodo());
-                }
-                else if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), 0) != -1)
-                {
-                    i = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), 0);
-                }
-
-                result = i.GetType();
-            }else if (laTabla.buscarNivelMetodo() != -1)
-            {
-                int verificarNivel =-1;
-
-                int nivel = -1;
-                
-                for (int p = laTabla.buscarNivelMetodo(); laTabla.obtenerNivelActual() > p; p++)
-                {
-                    if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), p) != -1)
+                    if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) != -1)
                     {
-                        nivel = p;
-                        break;
+                        i = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual());
                     }
-                }
-                
-                if (nivel !=-1)
-                {
-                    i = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), nivel);
-                    result = i.GetType();
-                }
-                else
-                {
-                    errorMsgs.Add("\n" +"Error de asignacion, identificador \"" + context.IDENTIFIER(0).GetText() + "\" no declarado." + showErrorPosition(context.IDENTIFIER(0).Symbol));
-                }
+                    else if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.buscarNivelMetodo()) != -1)
+                    {
+                        i = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), laTabla.buscarNivelMetodo());
+                    }
+                    else if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), 0) != -1)
+                    {
+                        i = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), 0);
+                    }
 
+                    result = i.GetType();
+                }else if (context.DOT() == null && context.LBRACK() == null && context.RBRACK() == null && 
+                          laTabla.buscarNivelMetodo() != -1)
+                {
+                    int verificarNivel =-1;
+
+                    int nivel = -1;
+                    
+                    for (int p = laTabla.buscarNivelMetodo(); laTabla.obtenerNivelActual() > p; p++)
+                    {
+                        if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), p) != -1)
+                        {
+                            nivel = p;
+                            break;
+                        }
+                    }
+                    
+                    if (nivel !=-1)
+                    {
+                        i = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), nivel);
+                        result = i.GetType();
+                    }
+                    else
+                    {
+                        errorMsgs.Add("\n" +"Error de asignacion, identificador \"" + context.IDENTIFIER(0).GetText() + "\" no declarado." + showErrorPosition(context.IDENTIFIER(0).Symbol));
+                    }
+
+                }
+            
+            }else if (context.DOT(0) == null && context.LBRACK(0) != null && context.RBRACK(0) != null)
+            {
+                if (laTabla.buscarSegundoTipoArray(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) !=
+                    -1 ||
+                    laTabla.buscarSegundoTipoArray(context.IDENTIFIER(0).GetText(), laTabla.buscarNivelMetodo()) !=
+                    -1 ||
+                    laTabla.buscarSegundoTipoArray(context.IDENTIFIER(0).GetText(), 0) != -1)
+                {
+                    if (laTabla.buscarSegundoTipoArray(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) != -1 )
+                    {
+                        i = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual());
+                    }
+                    else if (laTabla.buscarSegundoTipoArray(context.IDENTIFIER(0).GetText(), laTabla.buscarNivelMetodo()) != -1)
+                    {
+                        i = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), laTabla.buscarNivelMetodo());
+                    }
+                    else if (laTabla.buscarSegundoTipoArray(context.IDENTIFIER(0).GetText(), 0) != -1)
+                    {
+                        i = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), 0);
+                    }
+
+                    int resultExpr;
+
+                    for (int sum = 0; context.expr().Count() > sum; sum++)
+                    {
+                        resultExpr = (int) Visit(context.expr(sum));
+
+                        if (resultExpr != 0 && resultExpr != 2)
+                        {
+                            errorMsgs.Add("\n" +"Error de array, el tipo \"" + showType(resultExpr) + "\" no puede ser usado para un indice." + showErrorPosition(context.expr(sum).Start));
+                        }
+                    }
                 
+                    result = i.GetSecondType();
+                    
+                }
             }
             else
             {

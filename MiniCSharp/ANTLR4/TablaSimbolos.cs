@@ -128,6 +128,21 @@ namespace MiniCSharp.ANTLR4
             return -1;
         }
         
+        public int buscarSegundoTipoArray(String nombre, int nivel){
+            foreach (Object id in tabla){
+                if (((Ident)id).GetToken().Text.Equals(nombre)){
+                    if (((Ident)id).GetNivel().Equals(nivel))
+                    {
+                        if (((Ident)id).GetType().Equals(13))
+                        {
+                            return ((Ident)id).GetSecondType();
+                        }
+                    }
+                }
+            }
+            return -1;
+        }
+        
         public Ident buscarToken(String nombre, int nivel){
             foreach (Object id in tabla){
                 if (((Ident)id).GetToken().Text.Equals(nombre)){
