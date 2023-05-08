@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.Pkcs;
 using System.Text;
 using System.Windows.Forms;
 using Antlr4.Runtime;
@@ -89,6 +90,11 @@ namespace MiniCSharp.ANTLR4
             public IToken GetInstanceToken()
             {
                 return instanceToken;
+            }
+            
+            public void SetInstanceToken(IToken token)
+            {
+                instanceToken=token;
             }
 
         }
@@ -197,8 +203,37 @@ namespace MiniCSharp.ANTLR4
             foreach (Object id in tabla){
                 if (((Ident)id).GetIsMethod().Equals(true))
                 {
-                    //MessageBox.Show(((Ident)id).GetToken().Text);
                     return (Ident)id;
+                }
+            }
+            return null;
+        }
+        
+        public Ident buscarTokenClaseNombre(String nombre){
+            foreach (Object id in tabla){
+                if (((Ident)id).GetToken().Text.Equals(nombre)){
+                    if (((Ident)id).GetIsClass().Equals(true))
+                    {
+                        return (Ident)id;
+                    }
+                }
+            }
+            return null;
+        }
+        
+        public Ident ModificarTokenInstancia(String nombre, int nivel, IToken instancia)
+        {
+            foreach (Object id in tabla)
+            {
+                if (((Ident)id).GetToken().Text.Equals(nombre)){
+                    if (((Ident)id).GetNivel().Equals(nivel))
+                    {
+                        if (((Ident)id).GetInstanceToken() == null)
+                        {
+                            ((Ident)id).SetInstanceToken(instancia);
+                            return (Ident)id;
+                        }
+                    }
                 }
             }
             return null;
@@ -234,8 +269,20 @@ namespace MiniCSharp.ANTLR4
             builder.Append("\n" +"----- INICIO TABLA ------");
             for (int i = 0; i < tabla.Count(); i++) {
                 IToken s = (IToken) ((Ident) tabla.ElementAt(i)).GetToken();
+
+                string textoInstancia;
+                
+                if (((Ident)tabla.ElementAt(i)).GetInstanceToken() != null)
+                {
+                    textoInstancia = ((Ident)tabla.ElementAt(i)).GetInstanceToken().Text;
+                }
+                else
+                {
+                    textoInstancia = "NO";
+                }
+                
                 builder.Append("\n" + "Nombre: " + s.Text + " -- Tipo: " + ((Ident) tabla.ElementAt(i)).GetType() + " -- SegundoTipo: " + ((Ident) tabla.ElementAt(i)).GetSecondType() + " -- Nivel: " + ((Ident) tabla.ElementAt(i)).GetNivel() + " -- EsMetodo: " + ((Ident) tabla.ElementAt(i)).GetIsMethod());
-                builder.Append("\n" + "EsClase: " + ((Ident) tabla.ElementAt(i)).GetIsClass()+ " -- EsVarMetodo: " + ((Ident) tabla.ElementAt(i)).GetIsVarMethod() + " -- Nombre Instancia : " + ((Ident) tabla.ElementAt(i)).GetInstanceToken() + "\n");
+                builder.Append("\n" + "EsClase: " + ((Ident) tabla.ElementAt(i)).GetIsClass()+ " -- EsVarMetodo: " + ((Ident) tabla.ElementAt(i)).GetIsVarMethod() + " -- Nombre Instancia : " + textoInstancia + "\n");
             }
             builder.Append("\n" +"----- FIN TABLA ------");
             return builder.ToString();

@@ -19,6 +19,7 @@ namespace MiniCSharp.ANTLR4
         public int methodType;
         public bool isList;
         public bool isArray;
+        public TablaSimbolos.Ident instanceToken;
         public AContextual(){
             this.laTabla = new TablaSimbolos();
             this.errorMsgs = new ArrayList<String>();
@@ -31,7 +32,7 @@ namespace MiniCSharp.ANTLR4
         
         public String toString()
         {
-            if (!hasErrors()) return "0 errores de parse";
+            if (!hasErrors()) return "0 errores";
             StringBuilder builder = new StringBuilder();
             foreach (String s in errorMsgs)
             {
@@ -56,6 +57,7 @@ namespace MiniCSharp.ANTLR4
                 case 11: return "void";
                 case 12: return "class";
                 case 13: return "array";
+                case 14: return "inst";
                 case 21: return "null";
                 default: return "none";
             }
@@ -106,7 +108,9 @@ namespace MiniCSharp.ANTLR4
                 laTabla.openScope();
                 Visit(context.methodDecl(i));
             }
-            MessageBox.Show(laTabla.imprimir()+ "\n" + toString());
+            //MessageBox.Show(laTabla.imprimir()+ "\n" + toString());
+            MessageBox.Show(laTabla.imprimir());
+            MessageBox.Show(toString());
             laTabla.closeScope();
             return null;
         }
@@ -248,7 +252,6 @@ namespace MiniCSharp.ANTLR4
                     for (int sum1 = 0; context.block().ChildCount > sum1; sum1++)
                     {
                         string subcadenaReturn = new string(context.block().GetChild(sum1).GetText().Take(6).ToArray());
-                        //MessageBox.Show(subcadena);
                         if (subcadenaReturn == "return")
                         {
                             comprobacion = true;
@@ -327,6 +330,9 @@ namespace MiniCSharp.ANTLR4
                 else if (context.IDENTIFIER(0).GetText().Equals("bool"))
                 {
                     result = 8;
+                } else if (context.IDENTIFIER(0).GetText().Equals("inst"))
+                {
+                    result = 14;
                 }
                 else
                 {
@@ -551,23 +557,66 @@ namespace MiniCSharp.ANTLR4
         {
             try
             {
-                //int result = 1;
-                //result= (int) Visit(context.designator());
                 if (context.ASSIGN() != null)
                 {
                     designatorAssign = (int)Visit(context.designator());
-                    Visit(context.expr());
+
+                    if (designatorAssign == 14)
+                    {
+                        int i = -1;
+                        i= (int)Visit(context.expr());
+                        
+                        if (i != -1)
+                        {
+
+                            if (laTabla.buscarNivel(context.designator().GetText(), laTabla.obtenerNivelActual()) !=
+                                -1 ||
+                                laTabla.buscarNivel(context.designator().GetText(), laTabla.buscarNivelMetodo()) !=
+                                -1 ||
+                                laTabla.buscarNivel(context.designator().GetText(), 0) != -1)
+                            {
+                                TablaSimbolos.Ident designator = null;
+                                if (laTabla.buscarNivel(context.designator().GetText(), laTabla.obtenerNivelActual()) != -1)
+                                {
+                                    designator = laTabla.buscarToken(context.designator().GetText(), laTabla.obtenerNivelActual());
+                                }
+                                else if (laTabla.buscarNivel(context.designator().GetText(), laTabla.buscarNivelMetodo()) != -1)
+                                {
+                                    designator = laTabla.buscarToken(context.designator().GetText(), laTabla.buscarNivelMetodo());
+                                }
+                                else if (laTabla.buscarNivel(context.designator().GetText(), 0) != -1)
+                                {
+                                    designator = laTabla.buscarToken(context.designator().GetText(), 0);
+                                }
+
+                                TablaSimbolos.Ident verificacion = null;
+                                
+                                verificacion= laTabla.ModificarTokenInstancia(designator.GetToken().Text, designator.GetNivel(), instanceToken.GetToken());
+
+                                if (verificacion == null)
+                                {
+                                    errorMsgs.Add("\n" +"Error de instancia, la instancia \""+ context.designator().GetText() + "\" ya se le asigno una clase." + showErrorPosition(context.designator().Start));
+                                }
+
+                                instanceToken = null;
+
+                            }
+                            else
+                            {
+                                errorMsgs.Add("\n" +"Error de instancia, la instancia \""+ context.designator().GetText() + "\" no se encuentra." + showErrorPosition(context.designator().Start));
+                            }
+                        }
+
+                    }
+                    else
+                    {
+                        Visit(context.expr());
+                    }
                     
                     designatorAssign = -1;
-                    /*
-                    int tipoExpr = 1;
-                    tipoExpr= (int) Visit(context.expr());
-                    if (result != tipoExpr)
-                    {
-                        errorMsgs.Add("\n" + "Error de tipos, \"" + showType(result) + "\" y \"" + showType(tipoExpr) +
-                                      "\" no son compatibles." + showErrorPosition(context.ASSIGN().Symbol));
-                    }
-                    */
+                    
+                    
+                    
                 }
 
                 if (context.INCREMENT() != null)
@@ -1196,7 +1245,7 @@ namespace MiniCSharp.ANTLR4
                     (result == 1 && designatorAssign == 3) || (result == 0 && designatorAssign == 3) ||
                     (result == 21 && designatorAssign == 1) || (result == 21 && designatorAssign == 3) || 
                     (result == 21 && designatorAssign == 5) || (result == 21 && designatorAssign == 7) ||
-                    (result == 21 && designatorAssign == 9) )
+                    (result == 21 && designatorAssign == 9) || (result == 12 && designatorAssign == 14))
                 {
                 }
                 else
@@ -1512,8 +1561,20 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitNewFactorAST(MiniCSharpParser.NewFactorASTContext context)
         {
-            //TODO MODIFICAR
-            return context.IDENTIFIER().Symbol;
+            int result = -1;
+            try {
+                TablaSimbolos.Ident i = laTabla.buscarTokenClaseNombre(context.IDENTIFIER().GetText());
+                if (i != null)
+                {
+                    instanceToken = i;
+                    result = i.GetType();
+                }
+                else
+                {
+                    errorMsgs.Add("\n" +"Error de clase, identificador \"" + context.IDENTIFIER().GetText() + "\" no es una clase." + showErrorPosition(context.IDENTIFIER().Symbol));
+                }
+            } catch (Exception e){}
+            return result;
         }
 
         public override object VisitExprFactorAST(MiniCSharpParser.ExprFactorASTContext context)
@@ -1617,8 +1678,15 @@ namespace MiniCSharp.ANTLR4
                     result = i.GetSecondType();
                     
                 }
-            }
-            else
+            }else if (context.DOT(0) != null && context.LBRACK(0) == null && context.RBRACK(0) == null)
+            {
+                
+                
+            }else if (context.DOT(0) != null && context.LBRACK(0) != null && context.RBRACK(0) != null)
+            {
+                
+                
+            }else
             {
                 errorMsgs.Add("\n" +"Error de asignacion, identificador \"" + context.IDENTIFIER(0).GetText() + "\" no declarado." + showErrorPosition(context.IDENTIFIER(0).Symbol));
             }

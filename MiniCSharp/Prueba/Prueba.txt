@@ -23,10 +23,12 @@ class P
   int Main ()
     {
         int x, i;
+        inst jk;
         int? o;
         double b;
         bool y;
         x= prueba (2,2);
+        jk = new Table;
         
         o=null;
         
