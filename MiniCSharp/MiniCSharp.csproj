@@ -91,6 +91,7 @@
     <Compile Include="ANTLR4\MyDefaultErrorStrategy.cs" />
     <Compile Include="ANTLR4\MyErrorListener.cs" />
     <Compile Include="ANTLR4\MySyntaxErrorListener.cs" />
+    <Compile Include="ANTLR4\MyToken.cs" />
     <Compile Include="ANTLR4\TablaSimbolos.cs" />
     <Compile Include="Interfaz\ColoresFormInicio.cs" />
     <Compile Include="Interfaz\FormInicio.cs">

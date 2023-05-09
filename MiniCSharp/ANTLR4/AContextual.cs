@@ -20,9 +20,47 @@ namespace MiniCSharp.ANTLR4
         public bool isList;
         public bool isArray;
         public TablaSimbolos.Ident instanceToken;
+        public bool isVarInClass;
+        
         public AContextual(){
             this.laTabla = new TablaSimbolos();
             this.errorMsgs = new ArrayList<String>();
+        }
+
+
+        public void variablesPredeclaradas()
+        {
+            //1) null; valor nulo de una clase o arreglo variable. 
+            laTabla.insertar(new MyToken("null"), 21,-1, false, false, false, null);
+        }
+
+        public void metodosPredeclarados()
+        {
+            //2) chr(i); convierte el entero “i” a carácter.
+            laTabla.openScope();
+            laTabla.insertar(new MyToken("chr"), 4,-1, true, false, false, null);
+            laTabla.insertar(new MyToken("i"), 0,-1, false, false, true, null);
+            
+            //3) ord(ch); convierte el carácter ch en entero.
+            laTabla.openScope();
+            laTabla.insertar(new MyToken("ord"), 0,-1, true, false, false, null);
+            laTabla.insertar(new MyToken("ch"), 4,-1, false, false, true, null);
+            
+            //4) len(a); retorna el número de elementos de un arreglo/lista. //MODIFICAR
+            laTabla.openScope();
+            laTabla.insertar(new MyToken("len"), 0,-1, true, false, false, null);
+            laTabla.insertar(new MyToken("a"), 15,-1, false, false, true, null);
+            
+            //5) add(e); agrega un elemento a una lista. //MODIFICAR
+            laTabla.openScope();
+            laTabla.insertar(new MyToken("add"), 11,-1, true, false, false, null);
+            laTabla.insertar(new MyToken("list"), 10,-1, false, false, true, null);
+            laTabla.insertar(new MyToken("e"), 15,-1, false, false, true, null);
+            
+            //6) del(i) elimina el elemento del index i de la lista, si existe.
+            laTabla.openScope();
+            laTabla.insertar(new MyToken("del"), 11,-1, true, false, false, null);
+            laTabla.insertar(new MyToken("i"), 0,-1, false, false, true, null);
         }
         
         public Boolean hasErrors()
@@ -58,6 +96,7 @@ namespace MiniCSharp.ANTLR4
                 case 12: return "class";
                 case 13: return "array";
                 case 14: return "inst";
+                case 15: return "var";
                 case 21: return "null";
                 default: return "none";
             }
@@ -92,6 +131,8 @@ namespace MiniCSharp.ANTLR4
                 }
             } catch (Exception e){}
             
+            variablesPredeclaradas();
+            
             for (int i = 0; context.varDecl().Count() > i; i++)
             {
                 Visit(context.varDecl(i));
@@ -102,6 +143,8 @@ namespace MiniCSharp.ANTLR4
                 laTabla.openScope();
                 Visit(context.classDecl(i));
             }
+            
+            metodosPredeclarados();
 
             for (int i = 0; context.methodDecl().Count() > i; i++)
             {
@@ -127,6 +170,13 @@ namespace MiniCSharp.ANTLR4
                 IToken id = context.IDENTIFIER(0).Symbol;
                 int idType = (int) Visit(context.type());
                 TablaSimbolos.Ident i = laTabla.buscar(context.IDENTIFIER(0).GetText());
+                
+                if (isVarInClass.Equals(true) && idType==14)
+                {
+                    errorMsgs.Add("\n" + "Error de variable, variable \"" + context.IDENTIFIER(0).GetText() + "\" no puede utilizar el tipo \"" + showType(14) + "\" en una clase." + showErrorPosition(context.IDENTIFIER(0).Symbol));
+                    return null;
+                }
+
                 if (i == null || i != null && laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) == -1)
                 {
                     int verificar = -1;
@@ -213,11 +263,13 @@ namespace MiniCSharp.ANTLR4
                 TablaSimbolos.Ident i = laTabla.buscar(context.IDENTIFIER().GetText());
                 if (i == null) {
                     laTabla.insertar(id, idType,-1, false, true, false, null);
-                    
+
+                    isVarInClass = true;
                     for (int sum = 0; context.varDecl().Count() > sum; sum++)
                     {
                         Visit(context.varDecl(sum));
                     }
+                    isVarInClass = false;
                 }else{
                     errorMsgs.Add("\n" + "Error de clase, la clase \"" + context.IDENTIFIER().GetText() + "\" ya fue declarada." + showErrorPosition(context.IDENTIFIER().Symbol));
                 }
@@ -262,9 +314,6 @@ namespace MiniCSharp.ANTLR4
                     {
                         errorMsgs.Add("\n" +"Error de metodo, el metodo " + context.IDENTIFIER().GetText() + " usa el tipo " + showType(idType) + " y debe retornar en el mismo nivel al menos una vez" + "."+ showErrorPosition(context.IDENTIFIER().Symbol));
                     }
-
-                    
-                    ///TODO revisar porque no se sabe
 
                 }else{
                     errorMsgs.Add("\n" + "Error de metodo, metodo \"" + context.IDENTIFIER().GetText() + "\" ya fue declarado." + showErrorPosition(context.IDENTIFIER().Symbol));
@@ -1579,8 +1628,9 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitExprFactorAST(MiniCSharpParser.ExprFactorASTContext context)
         {
-            Visit(context.expr());
-            return null;
+            int result = -1;
+            result= (int) Visit(context.expr());
+            return result;
         }
 
         public override object VisitNullFactorAST(MiniCSharpParser.NullFactorASTContext context)
@@ -1590,7 +1640,6 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitDesignatorAST(MiniCSharpParser.DesignatorASTContext context)
         {
-            //TODO MODIFICAR
             int result =-1;
             TablaSimbolos.Ident i = null;
 
@@ -1678,12 +1727,174 @@ namespace MiniCSharp.ANTLR4
                     result = i.GetSecondType();
                     
                 }
+                else if (laTabla.buscarSegundoTipoList(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) !=
+                         -1 ||
+                         laTabla.buscarSegundoTipoList(context.IDENTIFIER(0).GetText(), laTabla.buscarNivelMetodo()) !=
+                         -1 ||
+                         laTabla.buscarSegundoTipoList(context.IDENTIFIER(0).GetText(), 0) != -1)
+                {
+                    if (laTabla.buscarSegundoTipoList(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) != -1 )
+                    {
+                        i = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual());
+                    }
+                    else if (laTabla.buscarSegundoTipoList(context.IDENTIFIER(0).GetText(), laTabla.buscarNivelMetodo()) != -1)
+                    {
+                        i = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), laTabla.buscarNivelMetodo());
+                    }
+                    else if (laTabla.buscarSegundoTipoList(context.IDENTIFIER(0).GetText(), 0) != -1)
+                    {
+                        i = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), 0);
+                    }
+                    
+                    int resultExpr;
+
+                    if (context.expr().Count() == 1)
+                    {
+                        
+                        resultExpr = (int) Visit(context.expr(0));
+
+                        if (resultExpr != 0 && resultExpr != 2)
+                        {
+                            errorMsgs.Add("\n" +"Error de list, el tipo \"" + showType(resultExpr) + "\" no puede ser usado para un indice." + showErrorPosition(context.expr(0).Start));
+                        }
+                        else
+                        {
+                            result = i.GetSecondType();
+                        }
+                        
+                    }
+                    else
+                    {
+                        errorMsgs.Add("\n" +"Error de list, se necesita un solo indice para utilizar." + showErrorPosition(context.IDENTIFIER(0).Symbol));
+                    }
+
+                }
             }else if (context.DOT(0) != null && context.LBRACK(0) == null && context.RBRACK(0) == null)
             {
+                TablaSimbolos.Ident designator = null;
+                if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) != -1)
+                {
+                    designator = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual());
+                }
+                else if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.buscarNivelMetodo()) != -1)
+                {
+                    designator = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), laTabla.buscarNivelMetodo());
+                }
+                else if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), 0) != -1)
+                {
+                    designator = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), 0);
+                }
+
+                if (designator.GetInstanceToken() != null)
+                {
+                    TablaSimbolos.Ident instanceDesignatorClass = laTabla.buscarTokenClaseNombre(designator.GetInstanceToken().Text);
+                    TablaSimbolos.Ident designatorClass = laTabla.buscarToken(context.IDENTIFIER(1).GetText(), instanceDesignatorClass.GetNivel());
+
+                    if (designatorClass != null)
+                    {
+
+                        if (designatorClass.GetType() == 13)
+                        {
+                            errorMsgs.Add("\n" +"Error de clase, identificador \"" + context.IDENTIFIER(1).GetText() + "\" es de tipo \"" + showType(13) + "\" debe utilizar: \"" + "[" + "\" y \"" + "]" + "\"." + showErrorPosition(context.IDENTIFIER(1).Symbol));
+                        }
+                        else
+                        {
+                                                    
+                            result = designatorClass.GetType();
+                        }
+                    }
+                    else
+                    {
+                        errorMsgs.Add("\n" +"Error de clase, identificador \"" + context.IDENTIFIER(1).GetText() + "\" no existe en la clase." + showErrorPosition(context.IDENTIFIER(1).Symbol));
+                    }
+
+                }
+                else
+                {
+                    errorMsgs.Add("\n" +"Error de instancia, identificador \"" + context.IDENTIFIER(0).GetText() + "\" no posee ninguna clase." + showErrorPosition(context.IDENTIFIER(0).Symbol));
+                }
                 
                 
             }else if (context.DOT(0) != null && context.LBRACK(0) != null && context.RBRACK(0) != null)
             {
+                TablaSimbolos.Ident designator = null;
+                if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) != -1)
+                {
+                    designator = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual());
+                }
+                else if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.buscarNivelMetodo()) != -1)
+                {
+                    designator = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), laTabla.buscarNivelMetodo());
+                }
+                else if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), 0) != -1)
+                {
+                    designator = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), 0);
+                }
+
+                if (designator.GetInstanceToken() != null)
+                {
+                    TablaSimbolos.Ident instanceDesignatorClass = laTabla.buscarTokenClaseNombre(designator.GetInstanceToken().Text);
+                    TablaSimbolos.Ident designatorClass = laTabla.buscarToken(context.IDENTIFIER(1).GetText(), instanceDesignatorClass.GetNivel());
+
+                    if (designatorClass != null)
+                    {
+
+                        if (designatorClass.GetType() != 13 && designatorClass.GetType() != 10)
+                        {
+                            errorMsgs.Add("\n" +"Error de clase, identificador \"" + context.IDENTIFIER(1).GetText() + "\" es de tipo \"" + showType(designatorClass.GetType()) + "\" los: \"" + "[" + "\" y \"" + "]" + "\" solo los puede utilizar el tipo \"" + showType(13)  + "\" y \"" + showType(10)  + "\"." + showErrorPosition(context.IDENTIFIER(1).Symbol));
+                        }
+                        else
+                        {
+
+                            if (designatorClass.GetType() == 10)
+                            {
+                                int resultExpr;
+                                if (context.expr().Count() == 1)
+                                {
+                        
+                                    resultExpr = (int) Visit(context.expr(0));
+
+                                    if (resultExpr != 0 && resultExpr != 2)
+                                    {
+                                        errorMsgs.Add("\n" +"Error de list, el tipo \"" + showType(resultExpr) + "\" no puede ser usado para un indice." + showErrorPosition(context.expr(0).Start));
+                                    }
+                                    else
+                                    {
+                                        result = i.GetSecondType();
+                                    }
+                        
+                                }
+                                else
+                                {
+                                    errorMsgs.Add("\n" +"Error de list, se necesita un solo indice para utilizar." + showErrorPosition(context.IDENTIFIER(0).Symbol));
+                                }
+                            }else if (designatorClass.GetType() == 13)
+                            {
+                                int resultExpr;
+
+                                for (int sum = 0; context.expr().Count() > sum; sum++)
+                                {
+                                    resultExpr = (int) Visit(context.expr(sum));
+
+                                    if (resultExpr != 0 && resultExpr != 2)
+                                    {
+                                        errorMsgs.Add("\n" +"Error de array, el tipo \"" + showType(resultExpr) + "\" no puede ser usado para un indice." + showErrorPosition(context.expr(sum).Start));
+                                    }
+                                }
+                                result = designatorClass.GetSecondType();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        errorMsgs.Add("\n" +"Error de clase, identificador \"" + context.IDENTIFIER(1).GetText() + "\" no existe en la clase." + showErrorPosition(context.IDENTIFIER(1).Symbol));
+                    }
+
+                }
+                else
+                {
+                    errorMsgs.Add("\n" +"Error de instancia, identificador \"" + context.IDENTIFIER(0).GetText() + "\" no posee ninguna clase." + showErrorPosition(context.IDENTIFIER(0).Symbol));
+                }
                 
                 
             }else

@@ -5,7 +5,9 @@ class P
 {
     class Table {
         int p;
+        inst lk;
         int[] neg;
+        list<int> uwu;
     }
     
     //class Table {
@@ -30,6 +32,8 @@ class P
         x= prueba (2,2);
         jk = new Table;
         
+        jk.uwu[1]=0;
+        
         o=null;
         
         int?[] array;
@@ -37,6 +41,8 @@ class P
         array[1][1]= null;
         
         list<int> uwu, dxd;
+        
+        uwu[1]="1";
         
         prueba (2,2);
         

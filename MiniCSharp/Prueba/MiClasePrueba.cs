@@ -12,6 +12,10 @@ namespace MiniCSharp.Interfaz
             char bn; 
             int?[] staticIntArray = new int?[3];
 
+            List<int> milista = new List<int>();
+
+            milista[0] = 1;
+
             i = (int)2.00+1;
             
             staticIntArray[(int)2.00+1] = (int?)2.00+1;
