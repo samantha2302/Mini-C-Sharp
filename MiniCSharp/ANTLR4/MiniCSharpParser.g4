@@ -69,8 +69,7 @@ factor: designator (LPAREN (actPars)? RPAREN)?                                  
       | DOUBLE_CONST                                                                               #doubleFactorAST //SE AGREGO PARA MANEJAR TIPOS DOUBLE.
       | (TRUE | FALSE)                                                                             #boolFactorAST
       | NEW IDENTIFIER                                                                             #newFactorAST
-      | LPAREN expr RPAREN                                                                         #exprFactorAST
-      | NULL                                                                                       #nullFactorAST; //MODIFICADO
+      | LPAREN expr RPAREN                                                                         #exprFactorAST;
 
 // Regla para un designador
 designator: IDENTIFIER (DOT IDENTIFIER | LBRACK expr RBRACK)*                                      #designatorAST;

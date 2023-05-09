@@ -1633,11 +1633,6 @@ namespace MiniCSharp.ANTLR4
             return result;
         }
 
-        public override object VisitNullFactorAST(MiniCSharpParser.NullFactorASTContext context)
-        {
-            return 21;
-        }
-
         public override object VisitDesignatorAST(MiniCSharpParser.DesignatorASTContext context)
         {
             int result =-1;

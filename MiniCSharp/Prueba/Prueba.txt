@@ -36,6 +36,8 @@ class P
         
         o=null;
         
+        x=null;
+        
         int?[] array;
         
         array[1][1]= null;
