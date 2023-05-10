@@ -46,20 +46,21 @@ namespace MiniCSharp.ANTLR4
             laTabla.insertar(new MyToken("ord"), 0,-1, true, false, false, null);
             laTabla.insertar(new MyToken("ch"), 4,-1, false, false, true, null);
             
-            //4) len(a); retorna el número de elementos de un arreglo/lista. //MODIFICAR
+            //4) len(a); retorna el número de elementos de un arreglo/lista..
             laTabla.openScope();
             laTabla.insertar(new MyToken("len"), 0,-1, true, false, false, null);
             laTabla.insertar(new MyToken("a"), 15,-1, false, false, true, null);
             
-            //5) add(e); agrega un elemento a una lista. //MODIFICAR
+            //5) add(a,e); agrega un elemento "e" a una lista/arreglo "a"..
             laTabla.openScope();
             laTabla.insertar(new MyToken("add"), 11,-1, true, false, false, null);
-            laTabla.insertar(new MyToken("list"), 10,-1, false, false, true, null);
+            laTabla.insertar(new MyToken("a"), 15,-1, false, false, true, null);
             laTabla.insertar(new MyToken("e"), 15,-1, false, false, true, null);
             
-            //6) del(i) elimina el elemento del index i de la lista, si existe.
+            //6) del(a,i) elimina el elemento del index "i" de la lista/arreglo "a", si existe..
             laTabla.openScope();
             laTabla.insertar(new MyToken("del"), 11,-1, true, false, false, null);
+            laTabla.insertar(new MyToken("a"), 15,-1, false, false, true, null);
             laTabla.insertar(new MyToken("i"), 0,-1, false, false, true, null);
         }
         
@@ -123,11 +124,19 @@ namespace MiniCSharp.ANTLR4
                 IToken id = context.IDENTIFIER().Symbol;
                 int idType = 12;
                 TablaSimbolos.Ident i = laTabla.buscar(context.IDENTIFIER().GetText());
-                if (i == null || i != null && laTabla.buscarNivel(context.IDENTIFIER().GetText(), laTabla.obtenerNivelActual()) == -1)
+                if (i == null && laTabla.buscarNivel(context.IDENTIFIER().GetText(), laTabla.obtenerNivelActual()) == -1)
                 {
-                    laTabla.insertar(id, idType,-1, false, true, false, null);
+                    if (context.IDENTIFIER().GetText() != "chr" && context.IDENTIFIER().GetText() != "ord" && context.IDENTIFIER().GetText() != "len" &&
+                        context.IDENTIFIER().GetText() != "add" && context.IDENTIFIER().GetText() != "del")
+                    {
+                        laTabla.insertar(id, idType,-1, false, true, false, null);
+                    }
+                    else
+                    {
+                        errorMsgs.Add("\n" + "Error de clase, identificador \"" + context.IDENTIFIER().GetText() + "\" ya fue declarado." + showErrorPosition(context.IDENTIFIER().Symbol));
+                    }
                 }else{
-                    errorMsgs.Add("\n" + "Error de clase, la clase \"" + context.IDENTIFIER().GetText() + "\" ya fue declarada." + showErrorPosition(context.IDENTIFIER().Symbol));
+                    errorMsgs.Add("\n" + "Error de clase, identificador \"" + context.IDENTIFIER().GetText() + "\" ya fue declarado." + showErrorPosition(context.IDENTIFIER().Symbol));
                 }
             } catch (Exception e){}
             
@@ -271,7 +280,7 @@ namespace MiniCSharp.ANTLR4
                     }
                     isVarInClass = false;
                 }else{
-                    errorMsgs.Add("\n" + "Error de clase, la clase \"" + context.IDENTIFIER().GetText() + "\" ya fue declarada." + showErrorPosition(context.IDENTIFIER().Symbol));
+                    errorMsgs.Add("\n" + "Error de clase, identificador \"" + context.IDENTIFIER().GetText() + "\" ya fue declarado." + showErrorPosition(context.IDENTIFIER().Symbol));
                 }
             } catch (Exception e){}
             return null;
@@ -288,7 +297,7 @@ namespace MiniCSharp.ANTLR4
                     idType = (int)Visit(context.type());
                 }
                 TablaSimbolos.Ident i = laTabla.buscar(context.IDENTIFIER().GetText());
-                if (i == null || i != null && laTabla.buscarNivel(context.IDENTIFIER().GetText(), laTabla.obtenerNivelActual()) == -1) {
+                if (i == null && laTabla.buscarNivel(context.IDENTIFIER().GetText(), laTabla.obtenerNivelActual()) == -1) {
                     laTabla.insertar(id, idType,-1, true, false, false, null);
                     
                     if (context.formPars() != null)
@@ -315,7 +324,8 @@ namespace MiniCSharp.ANTLR4
                         errorMsgs.Add("\n" +"Error de metodo, el metodo " + context.IDENTIFIER().GetText() + " usa el tipo " + showType(idType) + " y debe retornar en el mismo nivel al menos una vez" + "."+ showErrorPosition(context.IDENTIFIER().Symbol));
                     }
 
-                }else{
+                }else
+                {
                     errorMsgs.Add("\n" + "Error de metodo, metodo \"" + context.IDENTIFIER().GetText() + "\" ya fue declarado." + showErrorPosition(context.IDENTIFIER().Symbol));
                 }
             } catch (Exception e){}
@@ -723,19 +733,82 @@ namespace MiniCSharp.ANTLR4
 
                         if (cantidad != resul.Count())
                         {
-                            errorMsgs.Add("\n" +"Error de metodo, el identificador \""+ i.GetToken().Text + "\" recibio mas parametros de los solicitados." + showErrorPosition(i.GetToken()));
+                            errorMsgs.Add("\n" +"Error de metodo, el identificador \""+ i.GetToken().Text + "\" recibio menos o mas parametros de los solicitados." + showErrorPosition(context.designator().Start));
                         }
                         else
                         {
-                            int suma=0;
-                            for (int sum2 = 0; context.actPars().ChildCount > sum2; sum2++)
-                            {
-
-                                if (context.actPars().GetChild(sum2).GetText() != ",")
+                            if (i.GetToken().Text != "len" && i.GetToken().Text != "add" && i.GetToken().Text != "del")
+                            { 
+                                int suma=0;
+                                for (int sum2 = 0; context.actPars().ChildCount > sum2; sum2++)
                                 {
-                                    int result;
-                                    designatorAssign = resul[suma];
-                                    result = (int)Visit(context.actPars().GetChild(sum2));
+
+                                    if (context.actPars().GetChild(sum2).GetText() != ",")
+                                    {
+                                        int result;
+                                        designatorAssign = resul[suma];
+                                        result = (int)Visit(context.actPars().GetChild(sum2));
+                                        if ((result == 0 && designatorAssign == 0) || (result == 1 && designatorAssign == 1) ||
+                                            (result == 2 && designatorAssign == 2) || (result == 3 && designatorAssign == 3) ||
+                                            (result == 4 && designatorAssign == 4) || (result == 5 && designatorAssign == 5) ||
+                                            (result == 6 && designatorAssign == 6) || (result == 7 && designatorAssign == 7) ||
+                                            (result == 8 && designatorAssign == 8) || (result == 9 && designatorAssign == 9) ||
+                                            (result == 0 && designatorAssign == 1) || (result == 2 && designatorAssign == 3) ||
+                                            (result == 4 && designatorAssign == 5) || (result == 6 && designatorAssign == 7) ||
+                                            (result == 8 && designatorAssign == 9) || (result == 0 && designatorAssign == 2) ||
+                                            (result == 1 && designatorAssign == 3) || (result == 0 && designatorAssign == 3))
+                                        {
+                                        }
+                                        else
+                                        {
+                                            errorMsgs.Add("\n" +"Error de metodo, uno de los parametros requiere \""+ showType(designatorAssign) + "\" y se recibio \"" + showType(result) + "\"." + showErrorPosition(context.designator().Start));
+                                        }
+
+                                        suma++;
+                                    }
+                                    
+                                }
+                            }else if (i.GetToken().Text == "len")
+                            {
+                                int result;
+                                result = (int)Visit(context.actPars().GetChild(0));
+
+                                if (result != 10 && result != 13)
+                                {
+                                    errorMsgs.Add("\n" +"Error de metodo, este metodo requiere el tipo \""+ showType(10) + "\" o el \"" + showType(13) + "\"." + showErrorPosition(context.designator().Start)); 
+                                }
+                                
+                            }else if (i.GetToken().Text == "add")
+                            {
+                                int result;
+                                result = (int)Visit(context.actPars().GetChild(0));
+
+                                if (result != 10 && result != 13)
+                                {
+                                    errorMsgs.Add("\n" +"Error de metodo, este metodo requiere el tipo \""+ showType(10) + "\" o el \"" + showType(13) + "\"." + showErrorPosition(context.designator().Start)); 
+                                }
+                                else if (result == 10 || result == 13)
+                                {
+                                    
+                                    TablaSimbolos.Ident designator = null;
+
+                                    if (laTabla.buscarNivel(context.actPars().GetChild(0).GetText(), laTabla.obtenerNivelActual()) != -1)
+                                    {
+                                        designator = laTabla.buscarToken(context.actPars().GetChild(0).GetText(), laTabla.obtenerNivelActual());
+                                    }
+                                    else if (laTabla.buscarNivel(context.actPars().GetChild(0).GetText(), laTabla.buscarNivelMetodo()) != -1)
+                                    {
+                                        designator = laTabla.buscarToken(context.actPars().GetChild(0).GetText(), laTabla.buscarNivelMetodo());
+                                    }
+                                    else if (laTabla.buscarNivel(context.actPars().GetChild(0).GetText(), 0) != -1)
+                                    {
+                                        designator = laTabla.buscarToken(context.actPars().GetChild(0).GetText(), 0);
+                                    }
+
+                                    designatorAssign = designator.GetSecondType();
+
+                                    result = (int)Visit(context.actPars().GetChild(2));
+
                                     if ((result == 0 && designatorAssign == 0) || (result == 1 && designatorAssign == 1) ||
                                         (result == 2 && designatorAssign == 2) || (result == 3 && designatorAssign == 3) ||
                                         (result == 4 && designatorAssign == 4) || (result == 5 && designatorAssign == 5) ||
@@ -749,12 +822,44 @@ namespace MiniCSharp.ANTLR4
                                     }
                                     else
                                     {
-                                        errorMsgs.Add("\n" +"Error de metodo, uno de los parametros requiere \""+ showType(designatorAssign) + "\" y se recibio \"" + showType(result) + "\" + ." + showErrorPosition(context.designator().Start));
+                                        errorMsgs.Add("\n" +"Error de metodo, uno de los parametros requiere \""+ showType(designatorAssign) + "\" y se recibio \"" + showType(result) + "\"." + showErrorPosition(context.designator().Start));
                                     }
 
-                                    suma++;
+                                    
                                 }
+                                
+                            }else if (i.GetToken().Text == "del")
+                            {
+                                int result;
+                                result = (int)Visit(context.actPars().GetChild(0));
 
+                                if (result != 10 && result != 13)
+                                {
+                                    errorMsgs.Add("\n" +"Error de metodo, este metodo requiere el tipo \""+ showType(10) + "\" o el \"" + showType(13) + "\"." + showErrorPosition(context.designator().Start)); 
+                                }
+                                else if (result == 10 || result == 13)
+                                {
+                                    designatorAssign = 0;
+                                    result = (int)Visit(context.actPars().GetChild(2));
+                                    if ((result == 0 && designatorAssign == 0) || (result == 1 && designatorAssign == 1) ||
+                                        (result == 2 && designatorAssign == 2) || (result == 3 && designatorAssign == 3) ||
+                                        (result == 4 && designatorAssign == 4) || (result == 5 && designatorAssign == 5) ||
+                                        (result == 6 && designatorAssign == 6) || (result == 7 && designatorAssign == 7) ||
+                                        (result == 8 && designatorAssign == 8) || (result == 9 && designatorAssign == 9) ||
+                                        (result == 0 && designatorAssign == 1) || (result == 2 && designatorAssign == 3) ||
+                                        (result == 4 && designatorAssign == 5) || (result == 6 && designatorAssign == 7) ||
+                                        (result == 8 && designatorAssign == 9) || (result == 0 && designatorAssign == 2) ||
+                                        (result == 1 && designatorAssign == 3) || (result == 0 && designatorAssign == 3))
+                                    {
+                                    }
+                                    else
+                                    {
+                                        errorMsgs.Add("\n" +"Error de metodo, uno de los parametros requiere \""+ showType(designatorAssign) + "\" y se recibio \"" + showType(result) + "\"." + showErrorPosition(context.designator().Start));
+                                    }
+
+                                    
+                                }
+                                
                             }
                         }
 
@@ -765,21 +870,6 @@ namespace MiniCSharp.ANTLR4
 
             }
             catch (Exception e) {}
-            
-            /*
-            Visit(context.designator());
-            
-            if (context.ASSIGN() != null)
-            {
-                Visit(context.expr());
-            }
-            
-            if (context.actPars().ChildCount > 1)
-            {
-                Visit(context.actPars());
-            }
-            return null;
-            */
             return null;
         }
 
@@ -1510,6 +1600,8 @@ namespace MiniCSharp.ANTLR4
 
             if (context.LPAREN() != null)
             {
+                int guardar = designatorAssign;
+                designatorAssign = -1;
                 TablaSimbolos.Ident i = laTabla.buscarTokenMetodoNombre(context.designator().GetText());
                 TablaSimbolos.Ident metodoActual = laTabla.buscarTokenMetodo();
                 
@@ -1539,46 +1631,147 @@ namespace MiniCSharp.ANTLR4
 
                     if (cantidad != resul.Count())
                     {
-                        errorMsgs.Add("\n" +"Error de metodo, el identificador \""+ i.GetToken().Text + "\" recibio mas parametros de los solicitados." + showErrorPosition(i.GetToken()));
+                        errorMsgs.Add("\n" +"Error de metodo, el identificador \""+ i.GetToken().Text + "\" recibio menos o mas parametros de los solicitados." + showErrorPosition(context.designator().Start));
                     }
                     else
                     {
-                        int suma=0;
-                        for (int sum2 = 0; context.actPars().ChildCount > sum2; sum2++)
+                        if (i.GetToken().Text != "len" && i.GetToken().Text != "add" && i.GetToken().Text != "del")
                         {
-
-                            if (context.actPars().GetChild(sum2).GetText() != ",")
+                            int suma = 0;
+                            for (int sum2 = 0; context.actPars().ChildCount > sum2; sum2++)
                             {
-                                int result2;
-                                methodType = resul[suma];
-                                result2 = (int)Visit(context.actPars().GetChild(sum2));
-                                if ((result2 == 0 && methodType == 0) || (result2 == 1 && methodType == 1) ||
-                                    (result2 == 2 && methodType == 2) || (result2 == 3 && methodType == 3) ||
-                                    (result2 == 4 && methodType == 4) || (result2 == 5 && methodType == 5) ||
-                                    (result2 == 6 && methodType == 6) || (result2 == 7 && methodType == 7) ||
-                                    (result2 == 8 && methodType == 8) || (result2 == 9 && methodType == 9) ||
-                                    (result2 == 0 && methodType == 1) || (result2 == 2 && methodType == 3) ||
-                                    (result2 == 4 && methodType == 5) || (result2 == 6 && methodType == 7) ||
-                                    (result2 == 8 && methodType == 9) || (result2 == 0 && methodType == 2) ||
-                                    (result2 == 1 && methodType == 3) || (result2 == 0 && methodType == 3))
+
+                                if (context.actPars().GetChild(sum2).GetText() != ",")
                                 {
-                                }
-                                else
-                                {
-                                    errorMsgs.Add("\n" +"Error de metodo, uno de los parametros requiere \""+ showType(methodType) + "\" y se recibio \"" + showType(result2) + "\" + ." + showErrorPosition(context.designator().Start));
+                                    int result2;
+                                    methodType = resul[suma];
+                                    result2 = (int)Visit(context.actPars().GetChild(sum2));
+                                    if ((result2 == 0 && methodType == 0) || (result2 == 1 && methodType == 1) ||
+                                        (result2 == 2 && methodType == 2) || (result2 == 3 && methodType == 3) ||
+                                        (result2 == 4 && methodType == 4) || (result2 == 5 && methodType == 5) ||
+                                        (result2 == 6 && methodType == 6) || (result2 == 7 && methodType == 7) ||
+                                        (result2 == 8 && methodType == 8) || (result2 == 9 && methodType == 9) ||
+                                        (result2 == 0 && methodType == 1) || (result2 == 2 && methodType == 3) ||
+                                        (result2 == 4 && methodType == 5) || (result2 == 6 && methodType == 7) ||
+                                        (result2 == 8 && methodType == 9) || (result2 == 0 && methodType == 2) ||
+                                        (result2 == 1 && methodType == 3) || (result2 == 0 && methodType == 3))
+                                    {
+                                    }
+                                    else
+                                    {
+                                        errorMsgs.Add("\n" + "Error de metodo, uno de los parametros requiere \"" +
+                                                      showType(methodType) + "\" y se recibio \"" + showType(result2) +
+                                                      "\"." + showErrorPosition(context.designator().Start));
+                                    }
+
+                                    suma++;
                                 }
 
-                                suma++;
+                            }
+                        }else if (i.GetToken().Text == "len")
+                        {
+                            int verificar;
+                            verificar = (int)Visit(context.actPars().GetChild(0));
+
+                            if (verificar != 10 && verificar != 13)
+                            {
+                                errorMsgs.Add("\n" +"Error de metodo, este metodo requiere el tipo \""+ showType(10) + "\" o el \"" + showType(13) + "\"." + showErrorPosition(context.designator().Start)); 
                             }
 
+                        }else if (i.GetToken().Text == "add")
+                        {
+                            int verificar;
+                            verificar = (int)Visit(context.actPars().GetChild(0));
+
+                                if (verificar != 10 && verificar != 13)
+                                {
+                                    errorMsgs.Add("\n" +"Error de metodo, este metodo requiere el tipo \""+ showType(10) + "\" o el \"" + showType(13) + "\"." + showErrorPosition(context.designator().Start)); 
+                                }
+                                else if (verificar == 10 || verificar == 13)
+                                {
+                                    
+                                    TablaSimbolos.Ident designator = null;
+
+                                    if (laTabla.buscarNivel(context.actPars().GetChild(0).GetText(), laTabla.obtenerNivelActual()) != -1)
+                                    {
+                                        designator = laTabla.buscarToken(context.actPars().GetChild(0).GetText(), laTabla.obtenerNivelActual());
+                                    }
+                                    else if (laTabla.buscarNivel(context.actPars().GetChild(0).GetText(), laTabla.buscarNivelMetodo()) != -1)
+                                    {
+                                        designator = laTabla.buscarToken(context.actPars().GetChild(0).GetText(), laTabla.buscarNivelMetodo());
+                                    }
+                                    else if (laTabla.buscarNivel(context.actPars().GetChild(0).GetText(), 0) != -1)
+                                    {
+                                        designator = laTabla.buscarToken(context.actPars().GetChild(0).GetText(), 0);
+                                    }
+
+                                    methodType = designator.GetSecondType();
+
+                                    result = (int)Visit(context.actPars().GetChild(2));
+
+                                    if ((result == 0 && methodType == 0) || (result == 1 && methodType == 1) ||
+                                        (result == 2 && methodType == 2) || (result == 3 && methodType == 3) ||
+                                        (result == 4 && methodType == 4) || (result == 5 && methodType == 5) ||
+                                        (result == 6 && methodType == 6) || (result == 7 && methodType == 7) ||
+                                        (result == 8 && methodType == 8) || (result == 9 && methodType == 9) ||
+                                        (result == 0 && methodType == 1) || (result == 2 && methodType == 3) ||
+                                        (result == 4 && methodType == 5) || (result == 6 && methodType == 7) ||
+                                        (result == 8 && methodType == 9) || (result == 0 && methodType == 2) ||
+                                        (result == 1 && methodType == 3) || (result == 0 && methodType == 3))
+                                    {
+                                    }
+                                    else
+                                    {
+                                        errorMsgs.Add("\n" +"Error de metodo, uno de los parametros requiere \""+ showType(methodType) + "\" y se recibio \"" + showType(result) + "\"." + showErrorPosition(context.designator().Start));
+                                    }
+
+                                    
+                                }
+
+                        }else if (i.GetToken().Text == "del")
+                        {
+                            int verificar;
+                            verificar = (int)Visit(context.actPars().GetChild(0));
+
+                                if (verificar != 10 && verificar != 13)
+                                {
+                                    errorMsgs.Add("\n" +"Error de metodo, este metodo requiere el tipo \""+ showType(10) + "\" o el \"" + showType(13) + "\"." + showErrorPosition(context.designator().Start)); 
+                                }
+                                else if (verificar == 10 || verificar == 13)
+                                {
+                                    methodType = 0;
+
+                                    result = (int)Visit(context.actPars().GetChild(2));
+
+                                    if ((result == 0 && methodType == 0) || (result == 1 && methodType == 1) ||
+                                        (result == 2 && methodType == 2) || (result == 3 && methodType == 3) ||
+                                        (result == 4 && methodType == 4) || (result == 5 && methodType == 5) ||
+                                        (result == 6 && methodType == 6) || (result == 7 && methodType == 7) ||
+                                        (result == 8 && methodType == 8) || (result == 9 && methodType == 9) ||
+                                        (result == 0 && methodType == 1) || (result == 2 && methodType == 3) ||
+                                        (result == 4 && methodType == 5) || (result == 6 && methodType == 7) ||
+                                        (result == 8 && methodType == 9) || (result == 0 && methodType == 2) ||
+                                        (result == 1 && methodType == 3) || (result == 0 && methodType == 3))
+                                    {
+                                    }
+                                    else
+                                    {
+                                        errorMsgs.Add("\n" +"Error de metodo, uno de los parametros requiere \""+ showType(methodType) + "\" y se recibio \"" + showType(result) + "\"." + showErrorPosition(context.designator().Start));
+                                    }
+
+                                    
+                                }
+
                         }
+
                     }
 
 
                 }
-
+                
                 result = i.GetType();
                 methodType = -1;
+                designatorAssign = guardar;
             }
             return result;
         }

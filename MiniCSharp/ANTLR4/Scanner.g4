@@ -26,18 +26,6 @@ USING: 'using';
 
 // Tipos
 QMARK: '?';
-//LIST: 'List';
-//INTQ: 'int?';
-//DOUBLE: 'double';
-//DOUBLEQ: 'double?';
-//CHAR: 'char';
-//CHARQ: 'char?';
-//STRING: 'string';
-//STRINGQ: 'string?';
-//BOOL: 'bool';
-//BOOLQ: 'bool?';
-//LIST : 'list';
-
 
 // Operadores
 PLUS: '+';
@@ -74,8 +62,6 @@ fragment DIGIT : [0-9]+;
 NUMBER : [0-9]+;
 
 DOUBLE_CONST: NUMBER DOT NUMBER;
-//DOUBLE_CONST: NUMBER ('.' NUMBER)? EXPONENT? [fF]?; correcto?
-//fragment EXPONENT: [+-]? NUMBER;
 
 CHAR_CONSTANT: '\'' (ESCAPE_SEQUENCE | ~['\\]) '\'';
 

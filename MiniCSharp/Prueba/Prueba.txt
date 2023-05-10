@@ -18,54 +18,27 @@ class P
      int m;
      int p;
      
-   int prueba (int x, double b)
+   int pruebay (char x, double b)
      {
         int o;
      }
+ class prueba {
+     int p;
+     inst lk;
+     int[] neg;
+     list<int> uwu;
+ }
   int Main ()
     {
         int x, i;
         inst jk;
         int? o;
-        double b;
-        bool y;
-        x= prueba (2,2);
-        jk = new Table;
+        list<string> uwu;
+        pruebay(1,"a");
         
-        jk.uwu[1]=0;
-        
-        o=null;
-        
-        x=null;
-        
-        int?[] array;
-        
-        array[1][1]= null;
-        
-        list<int> uwu, dxd;
-        
-        uwu[1]="1";
-        
-        prueba (2,2);
-        
-        {
-           {
-           }
-        }
-                
-        
-        x=(int)2+2/2*2+2+3.0000-5+4/2.0000*2.000/2.0000*2;
-        if (2.0000+1==1)
-        {
-                return (int)2.0000+2.000;
-        {
-        {
-        }
-        }
-            
-        }
-        
-        return y;
+        del(uwu,1);
+       
+        x= del(uwu,"a");
         
         bool m;
         
