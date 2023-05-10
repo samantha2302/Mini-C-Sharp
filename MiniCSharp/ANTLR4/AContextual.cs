@@ -166,8 +166,7 @@ namespace MiniCSharp.ANTLR4
             laTabla.closeScope();
             return null;
         }
-
-        //No es necesario.
+        
         public override object VisitUsingAST(MiniCSharpParser.UsingASTContext context)
         {
             return null;
@@ -195,7 +194,7 @@ namespace MiniCSharp.ANTLR4
                         {
                             if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), p) != -1)
                             {
-                                errorMsgs.Add("\n" + "Error de variable, variable \"" + context.IDENTIFIER(0).GetText() + "\" ya fue declarada." + showErrorPosition(context.IDENTIFIER(0).Symbol));
+                                errorMsgs.Add("\n" + "Error de variable, identificador \"" + context.IDENTIFIER(0).GetText() + "\" ya fue declarado." + showErrorPosition(context.IDENTIFIER(0).Symbol));
                                 verificar = 1;
                             }
                         }
@@ -217,7 +216,7 @@ namespace MiniCSharp.ANTLR4
                     }
                     
                 }else{
-                    errorMsgs.Add("\n" + "Error de variable, variable \"" + context.IDENTIFIER(0).GetText() + "\" ya fue declarada." + showErrorPosition(context.IDENTIFIER(0).Symbol));
+                    errorMsgs.Add("\n" + "Error de variable, identificador \"" + context.IDENTIFIER(0).GetText() + "\" ya fue declarado." + showErrorPosition(context.IDENTIFIER(0).Symbol));
                 }
                 
                 for (int sum = 1; context.IDENTIFIER().Count() > sum; sum++)
@@ -233,7 +232,7 @@ namespace MiniCSharp.ANTLR4
                             {
                                 if (laTabla.buscarNivel(context.IDENTIFIER(sum).GetText(), p) != -1)
                                 {
-                                    errorMsgs.Add("\n" + "Error de variable, variable \"" + context.IDENTIFIER(sum).GetText() + "\" ya fue declarada." + showErrorPosition(context.IDENTIFIER(0).Symbol));
+                                    errorMsgs.Add("\n" + "Error de variable, identificador \"" + context.IDENTIFIER(sum).GetText() + "\" ya fue declarado." + showErrorPosition(context.IDENTIFIER(0).Symbol));
                                     verificar = 1;
                                 }
                             }
@@ -255,7 +254,7 @@ namespace MiniCSharp.ANTLR4
                         }
                         
                     }else{
-                        errorMsgs.Add("\n" + "Error de variable, variable \"" + context.IDENTIFIER(sum).GetText() + "\" ya fue declarada." + showErrorPosition(context.IDENTIFIER(sum).Symbol));
+                        errorMsgs.Add("\n" + "Error de variable, identificador \"" + context.IDENTIFIER(sum).GetText() + "\" ya fue declarado." + showErrorPosition(context.IDENTIFIER(sum).Symbol));
                     }
                 }
             } catch (Exception e){}
@@ -326,7 +325,7 @@ namespace MiniCSharp.ANTLR4
 
                 }else
                 {
-                    errorMsgs.Add("\n" + "Error de metodo, metodo \"" + context.IDENTIFIER().GetText() + "\" ya fue declarado." + showErrorPosition(context.IDENTIFIER().Symbol));
+                    errorMsgs.Add("\n" + "Error de metodo, identificador \"" + context.IDENTIFIER().GetText() + "\" ya fue declarado." + showErrorPosition(context.IDENTIFIER().Symbol));
                 }
             } catch (Exception e){}
             return null;
@@ -342,7 +341,7 @@ namespace MiniCSharp.ANTLR4
                 {
                     laTabla.insertar(id, idType, -1,false, false, true, null);
                 }else{
-                    errorMsgs.Add("\n" + "Error de variable, variable \"" + context.IDENTIFIER(0).GetText() + "\" ya fue declarada." + showErrorPosition(context.IDENTIFIER(0).Symbol));
+                    errorMsgs.Add("\n" + "Error de variable, identificador \"" + context.IDENTIFIER(0).GetText() + "\" ya fue declarado." + showErrorPosition(context.IDENTIFIER(0).Symbol));
                 }
                 
                 for (int sum = 1; context.IDENTIFIER().Count() > sum; sum++)
@@ -353,7 +352,7 @@ namespace MiniCSharp.ANTLR4
                     if (iN == null || iN != null && laTabla.buscarNivel(context.IDENTIFIER(sum).GetText(), laTabla.obtenerNivelActual()) == -1){
                         laTabla.insertar(idN, idTypeN,-1,false, false,true, null);
                     }else{
-                        errorMsgs.Add("\n" + "Error de variable, variable \"" + context.IDENTIFIER(sum).GetText() + "\" ya fue declarada." + showErrorPosition(context.IDENTIFIER(sum).Symbol));
+                        errorMsgs.Add("\n" + "Error de variable, identificador \"" + context.IDENTIFIER(sum).GetText() + "\" ya fue declarado." + showErrorPosition(context.IDENTIFIER(sum).Symbol));
                     }
                 }
             } catch (Exception e){}
@@ -957,15 +956,9 @@ namespace MiniCSharp.ANTLR4
                 }
                 else
                 {
-                    errorMsgs.Add("\n" +"Error de metodo, el metodo " + i.GetToken().Text + " usa el tipo " + showType(methodType) + " y se esta retornando el tipo " + showType(result) + "."+ showErrorPosition(context.expr().Start));
+                    errorMsgs.Add("\n" +"Error de metodo, el metodo \"" +  i.GetToken().Text + "\" usa el tipo \"" + showType(methodType) + "\" y se esta retornando el tipo \"" + showType(result) + "\"."+ showErrorPosition(context.expr().Start));
                 }
             }
-            
-            //int result = -1;
-            //if (context.expr()!= null)
-            //{
-                //result = (int) Visit(context.expr());
-            //}
             methodType = -1;
             return result;
         }
@@ -1054,7 +1047,7 @@ namespace MiniCSharp.ANTLR4
             
             type2= (int) Visit(context.expr(1));
             
-            if (isMultitype(op)){ //el operador es multitipo (char, int ...)
+            if (isMultitype(op)){
                 if ((result==0&&type2==0) || (result==1&&type2==1) ||
                     (result==2&&type2==2) || (result==3&&type2==3) ||
                     (result==4&&type2==4) || (result==5&&type2==5) || 
@@ -1071,12 +1064,12 @@ namespace MiniCSharp.ANTLR4
                     (result==0&&type2==3) || (result==3&&type2==0)||
                     (result==1&&type2==2) || (result==2&&type2==1) || 
                     (result==21&&type2==21)){
-                    result = type2; //si el operador recibiera dos tipos iguales pero devolviera otro, debe de cambiarse
+                    result = type2;
                 }else {
-                    errorMsgs.Add("\n" +"Error de tipos, " + showType(result) + " y " + showType(type2) + " no son compatibles para el operador " + op + "." + showErrorPosition(context.relop().Start));
+                    errorMsgs.Add("\n" +"Error de tipos, \"" + showType(result) + "\" y \"" + showType(type2) + "\" no son compatibles para el operador \"" + op + "\"." + showErrorPosition(context.relop().Start));
                 }
             }
-            else { //el operador es solo para int
+            else {
                 if (result==0&&type2==0 || result==1&&type2==1 ||
                     result==2&&type2==2 || result==3&&type2==3 ||
                     result==0&&type2==1 || result==0&&type2==2 ||
@@ -1088,7 +1081,7 @@ namespace MiniCSharp.ANTLR4
                     result==3&&type2==1 || result==3&&type2==2) {
                     result = type2;
                 }else {
-                    errorMsgs.Add("\n" +"Error de tipos, " + showType(result) + " y " + showType(type2) + " no son compatibles para el operador " + op + "." + showErrorPosition(context.relop().Start));
+                    errorMsgs.Add("\n" +"Error de tipos, \"" + showType(result) + "\" y \"" + showType(type2) + "\" no son compatibles para el operador \"" + op + "\"." + showErrorPosition(context.relop().Start));
                 }
             }
             
@@ -1146,7 +1139,6 @@ namespace MiniCSharp.ANTLR4
 
                 if (designatorAssign != -1)
                 {
-                    //el operador es multitipo (char, int ...)
                     if ((cast == 0 && designatorAssign == 0) || (cast == 1 && designatorAssign == 1) ||
                         (cast == 2 && designatorAssign == 2) || (cast == 3 && designatorAssign == 3) ||
                         (cast == 4 && designatorAssign == 4) || (cast == 5 && designatorAssign == 5) ||
@@ -1200,8 +1192,8 @@ namespace MiniCSharp.ANTLR4
                     }
                     else
                     {
-                        errorMsgs.Add("\n" + "Error de tipos, " + showType(cast) + " y " + showType(designatorAssign) +
-                                      " no son compatibles para casting" + "." +
+                        errorMsgs.Add("\n" + "Error de tipos, \"" + showType(cast) + "\" y \"" + showType(designatorAssign) +
+                                      "\" no son compatibles para casting" + "." +
                                       showErrorPosition(context.term(0).Start));
                     }
                 }else if (methodType!=-1)
@@ -1259,8 +1251,8 @@ namespace MiniCSharp.ANTLR4
                     }
                     else
                     {
-                        errorMsgs.Add("\n" + "Error de tipos, " + showType(cast) + " y " + showType(methodType) +
-                                      " no son compatibles para casting" + "." +
+                        errorMsgs.Add("\n" + "Error de tipos, \"" + showType(cast) + "\" y \"" + showType(methodType) +
+                                      "\" no son compatibles para casting" + "." +
                                       showErrorPosition(context.term(0).Start));
                     }
                 }
@@ -1319,8 +1311,8 @@ namespace MiniCSharp.ANTLR4
                     }
                     else
                     {
-                        errorMsgs.Add("\n" + "Error de tipos, " + showType(cast) + " y " + showType(result) +
-                                      " no son compatibles para casting" + "." +
+                        errorMsgs.Add("\n" + "Error de tipos, \"" + showType(cast) + "\" y \"" + showType(result) +
+                                      "\" no son compatibles para casting" + "." +
                                       showErrorPosition(context.term(0).Start));
                     }
                 }
@@ -1334,8 +1326,8 @@ namespace MiniCSharp.ANTLR4
                     designatorAssign != -1 && designatorAssign == 6 ||
                     designatorAssign != -1 && designatorAssign == 8)
                 {
-                    errorMsgs.Add("\n" + "Error de tipos, " + showType(designatorAssign) +
-                                  " no puede asignarse con null" + "." +
+                    errorMsgs.Add("\n" + "Error de tipos, \"" + showType(designatorAssign) +
+                                  "\" no puede asignarse con \"" + showType(21) +"\"." +
                                   showErrorPosition(context.term(0).Start));
                 }
                 
@@ -1345,8 +1337,8 @@ namespace MiniCSharp.ANTLR4
                     methodType != -1 && methodType == 6 ||
                     methodType != -1 && methodType == 8)
                 {
-                    errorMsgs.Add("\n" + "Error de tipos, " + showType(methodType) +
-                                  " no puede asignarse con null" + "." +
+                    errorMsgs.Add("\n" + "Error de tipos, \"" + showType(methodType) +
+                                  "\" no puede asignarse con \"" + showType(21) +"\"." +
                                   showErrorPosition(context.term(0).Start));
                 }
             }
@@ -1389,7 +1381,7 @@ namespace MiniCSharp.ANTLR4
                 }
                 else
                 {
-                    errorMsgs.Add("\n" +"Error de tipos: \""+ showType(designatorAssign) + "\" y \"" + showType(result) + "\" no son compatibles." + showErrorPosition(context.term(0).Start));
+                    errorMsgs.Add("\n" +"Error de tipos, \""+ showType(designatorAssign) + "\" y \"" + showType(result) + "\" no son compatibles." + showErrorPosition(context.term(0).Start));
                 }
             }else if (methodType != -1)
             {
@@ -1406,7 +1398,7 @@ namespace MiniCSharp.ANTLR4
                 }
                 else
                 {
-                    errorMsgs.Add("\n" +"Error de tipos: \""+ showType(methodType) + "\" y \"" + showType(result) + "\" no son compatibles." + showErrorPosition(context.term(0).Start));
+                    errorMsgs.Add("\n" +"Error de tipos, \""+ showType(methodType) + "\" y \"" + showType(result) + "\" no son compatibles." + showErrorPosition(context.term(0).Start));
                 }
             }
 
@@ -1431,7 +1423,7 @@ namespace MiniCSharp.ANTLR4
                 }
                 else
                 {
-                    errorMsgs.Add("\n" +"Error de tipos: \""+ showType(designatorAssign) + "\" y \"" + showType(type2) + "\" no son compatibles." + showErrorPosition(context.term(0).Start));
+                    errorMsgs.Add("\n" +"Error de tipos, \""+ showType(designatorAssign) + "\" y \"" + showType(type2) + "\" no son compatibles." + showErrorPosition(context.term(0).Start));
                 }
             }else if (methodType != -1)
             {
@@ -1449,17 +1441,17 @@ namespace MiniCSharp.ANTLR4
                 }
                 else
                 {
-                    errorMsgs.Add("\n" +"Error de tipos: \""+ showType(methodType) + "\" y \"" + showType(type2) + "\" no son compatibles." + showErrorPosition(context.term(0).Start));
+                    errorMsgs.Add("\n" +"Error de tipos, \""+ showType(methodType) + "\" y \"" + showType(type2) + "\" no son compatibles." + showErrorPosition(context.term(0).Start));
                 }
             }
-                if (isMultitype(op)){ //el operador es multitipo (char, int ...)
+                if (isMultitype(op)){
                     if ((result==0&&type2==0) || (result==1&&type2==1)) {
-                        result = type2; //si el operador recibiera dos tipos iguales pero devolviera otro, debe de cambiarse
+                        result = type2;
                     }else {
-                        errorMsgs.Add("\n" +"Error de tipos: " + showType(result) + " y " + showType(type2) + " no son compatibles para el operador " + op + "." + showErrorPosition(context.addop(i - 1).Start));
+                        errorMsgs.Add("\n" +"Error de tipos, \"" + showType(result) + "\" y \"" + showType(type2) + "\" no son compatibles para el operador \"" + op + "\"." + showErrorPosition(context.addop(i - 1).Start));
                     }
                 }
-                else { //el operador es solo para int
+                else {
                     if (result==0&&type2==0 || result==1&&type2==1 ||
                         result==2&&type2==2 || result==3&&type2==3 ||
                         result==0&&type2==1 || result==0&&type2==2 ||
@@ -1472,31 +1464,11 @@ namespace MiniCSharp.ANTLR4
                         result==3&&type2==3) {
                         result = type2;
                     }else {
-                        errorMsgs.Add("\n" +"Error de tipos: " + showType(result) + " y " + showType(type2) + " no son compatibles para el operador " + op + "." + showErrorPosition(context.addop(i - 1).Start));
+                        errorMsgs.Add("\n" +"Error de tipos, \"" + showType(result) + "\" y \"" + showType(type2) + "\" no son compatibles para el operador \"" + op + "\"." + showErrorPosition(context.addop(i - 1).Start));
                     }
                 }
             }
             return result;
-            
-            /*
-            if (context.cast().ChildCount > 1)
-            {
-                Visit(context.cast());
-            }
-
-            Visit(context.term(0));
-            
-            for (int i = 0; context.addop().Count() > i; i++)
-            {
-                Visit(context.addop(i));
-            }
-            
-            for (int i = 1; context.term().Count() > i; i++)
-            {
-                Visit(context.term(i));
-            }
-            */
-            return null;
         }
 
         public override object VisitTermAST(MiniCSharpParser.TermASTContext context)
@@ -1525,7 +1497,7 @@ namespace MiniCSharp.ANTLR4
                     }
                     else
                     {
-                        errorMsgs.Add("\n" +"Error de tipos: \""+ showType(designatorAssign) + "\" y \"" + showType(type2) + "\" no son compatibles." + showErrorPosition(context.factor(i).Start));
+                        errorMsgs.Add("\n" +"Error de tipos, \""+ showType(designatorAssign) + "\" y \"" + showType(type2) + "\" no son compatibles." + showErrorPosition(context.factor(i).Start));
                     }
                 }else if (methodType != -1)
                 {
@@ -1543,15 +1515,15 @@ namespace MiniCSharp.ANTLR4
                     }
                     else
                     {
-                        errorMsgs.Add("\n" +"Error de tipos: \""+ showType(methodType) + "\" y \"" + showType(type2) + "\" no son compatibles." + showErrorPosition(context.factor(i).Start));
+                        errorMsgs.Add("\n" +"Error de tipos, \""+ showType(methodType) + "\" y \"" + showType(type2) + "\" no son compatibles." + showErrorPosition(context.factor(i).Start));
                     }
                 }
 
-                if (isMultitype(op)){ //el operador es multitipo (char, int ...)
+                if (isMultitype(op)){
                     if ((result==0&&type2==0) || (result==1&&type2==1)) {
-                        result = type2; //si el operador recibiera dos tipos iguales pero devolviera otro, debe de cambiarse
+                        result = type2;
                     }else {
-                        errorMsgs.Add("\n" +"Error de tipos, " + showType(result) + " y " + showType(type2) + " no son compatibles para el operador " + op + "." + showErrorPosition(context.mulop(i - 1).Start));
+                        errorMsgs.Add("\n" +"Error de tipos, \"" + showType(result) + "\" y \"" + showType(type2) + "\" no son compatibles para el operador \"" + op + "\"." + showErrorPosition(context.mulop(i - 1).Start));
                     }
                 }
                 else { //el operador es solo para int
@@ -1567,26 +1539,11 @@ namespace MiniCSharp.ANTLR4
                         result==3&&type2==3) {
                         result = type2;
                     }else {
-                        errorMsgs.Add("\n" +"Error de tipos: " + showType(result) + " y " + showType(type2) + " no son compatibles para el operador " + op + "." + showErrorPosition(context.mulop(i - 1).Start));
+                        errorMsgs.Add("\n" +"Error de tipos, \"" + showType(result) + "\" y \"" + showType(type2) + "\" no son compatibles para el operador \"" + op + "\"." + showErrorPosition(context.mulop(i - 1).Start));
                     }
                 }
             }
             return result;
-            /*
-            Visit(context.factor(0));
-            
-            for (int i = 1; context.mulop().Count() > i; i++)
-            {
-                Visit(context.mulop(i));
-            }
-            
-            for (int sum = 1; context.factor().Count() > sum; sum++)
-            {
-                Visit(context.factor(sum));
-            }
-
-            return null;
-            */
         }
 
         public override object VisitDesignatorFactorAST(MiniCSharpParser.DesignatorFactorASTContext context)
@@ -2089,12 +2046,6 @@ namespace MiniCSharp.ANTLR4
             {
                 errorMsgs.Add("\n" +"Error de asignacion, identificador \"" + context.IDENTIFIER(0).GetText() + "\" no declarado." + showErrorPosition(context.IDENTIFIER(0).Symbol));
             }
-
-            //for (int i = 0; context.expr().Count() > i; i++)
-            //{
-                //Visit(context.expr(i));
-            //}
-            //return context.IDENTIFIER(0).Symbol;
             return result;
         }
 
