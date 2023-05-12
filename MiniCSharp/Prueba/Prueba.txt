@@ -5,7 +5,6 @@ class P
 {
     class Table {
         int p;
-        inst lk;
         int[] neg;
         list<int> uwu;
     }
@@ -21,6 +20,11 @@ class P
    int pruebay (char x, double b)
      {
         int o;
+        return;
+        {
+            return 1;
+        }
+        
      }
  class prueba {
      int p;
@@ -35,6 +39,8 @@ class P
         int? o;
         list<string> uwu;
         pruebay(1,"a");
+        
+        x=1;
         
         del(uwu,1);
        

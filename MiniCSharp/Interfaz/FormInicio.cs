@@ -482,6 +482,7 @@ namespace CNote
             CommonTokenStream tokens = null;
             MyErrorListener errorListener = null;
             MySyntaxErrorListener syntaxErrorListener = null;
+            AContextual aContextual = null;
             var defaultErrorStrategy = new MyDefaultErrorStrategy();
             IParseTree tree;
             try
@@ -495,6 +496,7 @@ namespace CNote
 
                 errorListener = new MyErrorListener();
                 syntaxErrorListener = new MySyntaxErrorListener();
+                aContextual = new AContextual();
 
                 inst.RemoveErrorListeners();
                 inst.AddErrorListener(syntaxErrorListener);
@@ -510,8 +512,10 @@ namespace CNote
 
                 TreeNode rootNode = GenerateTreeNode(tree, parser);
                 treeView.Nodes.Add(rootNode);
+                
+                aContextual.Visit(tree);
 
-                if (errorListener.hasErrors() == false && syntaxErrorListener.hasErrors() == false)
+                if (errorListener.hasErrors() == false && syntaxErrorListener.hasErrors() == false && aContextual.hasErrors() == false)
                 {
                     cmdout.Text = "Compilacion exitosa\n";
                     Form form = new Form();
@@ -532,6 +536,10 @@ namespace CNote
                     if (syntaxErrorListener.hasErrors())
                     {
                         cmdout.Text += syntaxErrorListener.toString();
+                    }
+                    if (aContextual.hasErrors())
+                    {
+                        cmdout.Text += aContextual.toString();
                     }
                 }
 

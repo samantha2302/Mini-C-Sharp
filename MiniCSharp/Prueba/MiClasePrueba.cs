@@ -8,7 +8,17 @@ namespace MiniCSharp.Interfaz
         int x, i;
         public int ra ()
         {
-            int x, i;
+            int? x, i,m,n;
+            List<int> kj = new List<int>();
+            {
+                {
+                    {
+                        
+                    }
+                }
+            }
+
+            x = null;
             char bn; 
             int?[] staticIntArray = new int?[3];
 
@@ -67,7 +77,7 @@ namespace MiniCSharp.Interfaz
             return 1;
         }
         
-        public double ca(int i)
+        public double ca(int i, int x)
         {
             int g;
 

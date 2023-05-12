@@ -13,6 +13,17 @@ namespace MiniCSharp.ANTLR4
 
         private static int nivelActual;
 
+        /*
+         -Tok almacena el token del identificador,
+         -Type se guia por medio de un numero que representara el tipo del identificador,
+         -SecondType es utilizado para tipos list y array, ya que, a pesar de que son de este tipo, estos mismos pueden
+         tener otros tipos.
+         -Nivel almacena a que nivel se encuentra el identificador.
+         -IsMethod se marcara como true unicamente si el identificador es un metodo.
+         -IsClass se marcara como true unicamente si el identificador es una clase.
+         -IsVarMethod se marcara como true unicamente si el identificador es utilizado como un parametro de un metodo.
+         -InstanceToken almacena el token de un identificador de tipo clase.
+        */
         public class Ident{
             IToken tok;
             
@@ -62,16 +73,6 @@ namespace MiniCSharp.ANTLR4
                 return nivel;
             }
             
-            public int GetNivelActual()
-            {
-                return nivelActual;
-            }
-            
-            public void SetNivelActual(int nivel_actual)
-            {
-                nivelActual = nivel_actual;
-            }
-            
             public bool GetIsMethod()
             {
                 return isMethod;
@@ -110,6 +111,9 @@ namespace MiniCSharp.ANTLR4
             tabla.AddFirst(i);
         }
 
+        /*
+         Este metodo permite buscar un token por medio de un nombre devolviendo el Ident de la tabla.
+         */
         public Ident buscar(String nombre)
         {
             foreach (Object id in tabla)
@@ -122,6 +126,9 @@ namespace MiniCSharp.ANTLR4
             return null;
         }
 
+        /*
+         Este metodo permite buscar el nivel por medio del nombre y el nivel devolviendo el nivel del Ident buscado.
+         */
         public int buscarNivel(String nombre, int nivel){
             foreach (Object id in tabla){
                 if (((Ident)id).GetToken().Text.Equals(nombre)){
@@ -134,6 +141,9 @@ namespace MiniCSharp.ANTLR4
             return -1;
         }
         
+        /*
+         Este metodo permite buscar el segundo tipo de un array por medio del nombre y el nivel devolviendo el segundo tipo del Ident buscado.
+        */
         public int buscarSegundoTipoArray(String nombre, int nivel){
             foreach (Object id in tabla){
                 if (((Ident)id).GetToken().Text.Equals(nombre)){
@@ -149,6 +159,9 @@ namespace MiniCSharp.ANTLR4
             return -1;
         }
         
+        /*
+         Este metodo permite buscar el segundo tipo de un list por medio del nombre y el nivel devolviendo el segundo tipo del Ident buscado.
+        */
         public int buscarSegundoTipoList(String nombre, int nivel){
             foreach (Object id in tabla){
                 if (((Ident)id).GetToken().Text.Equals(nombre)){
@@ -164,6 +177,9 @@ namespace MiniCSharp.ANTLR4
             return -1;
         }
         
+        /*
+         Este metodo permite buscar el token por medio del nombre y el nivel devolviendo el Ident buscado.
+        */
         public Ident buscarToken(String nombre, int nivel){
             foreach (Object id in tabla){
                 if (((Ident)id).GetToken().Text.Equals(nombre)){
@@ -176,6 +192,9 @@ namespace MiniCSharp.ANTLR4
             return null;
         }
         
+        /*
+         Este metodo permite buscar el token de un metodo por medio del nombre devolviendo el Ident buscado.
+        */        
         public Ident buscarTokenMetodoNombre(String nombre){
             foreach (Object id in tabla){
                 if (((Ident)id).GetToken().Text.Equals(nombre)){
@@ -188,6 +207,10 @@ namespace MiniCSharp.ANTLR4
             return null;
         }
         
+        /*
+         Este metodo permite obtener los tipos de los identificadores de los metodos por medio del nivel devolviendo una lista
+         de todos los tipos que tienen los identificadores.
+        */        
         public List<int> obtenerTiposMetodosVariables(int nivel)
         {
             List<int> resul = new List<int>();
@@ -203,17 +226,22 @@ namespace MiniCSharp.ANTLR4
             return resul;
         }
         
+        /*
+         Este metodo permite buscar el nivel del metodo actual devolviendo el nivel del Ident.
+        */
         public int buscarNivelMetodo(){
             foreach (Object id in tabla){
                 if (((Ident)id).GetIsMethod().Equals(true))
                 {
-                    //MessageBox.Show(((Ident)id).GetToken().Text);
                     return ((Ident)id).GetNivel();
                 }
             }
             return -1;
         }
         
+        /*
+         Este metodo permite buscar el token del metodo actual devolviendo el Ident.
+        */
         public Ident buscarTokenMetodo(){
             foreach (Object id in tabla){
                 if (((Ident)id).GetIsMethod().Equals(true))
@@ -224,6 +252,9 @@ namespace MiniCSharp.ANTLR4
             return null;
         }
         
+        /*
+         Este metodo permite buscar el token de una clase por medio de un nombre devolviendo el Ident buscado.
+        */
         public Ident buscarTokenClaseNombre(String nombre){
             foreach (Object id in tabla){
                 if (((Ident)id).GetToken().Text.Equals(nombre)){
@@ -236,6 +267,10 @@ namespace MiniCSharp.ANTLR4
             return null;
         }
         
+        /*
+         Este metodo permite modificar el token de una instancia por medio del nombre, el nivel y el token instancia
+         devolviendo el Ident buscado.
+        */
         public Ident ModificarTokenInstancia(String nombre, int nivel, IToken instancia)
         {
             foreach (Object id in tabla)

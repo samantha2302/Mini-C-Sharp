@@ -8,19 +8,38 @@ using System.Windows.Interop;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 using generated;
+using MiniCSharp.Interfaz;
 
 namespace MiniCSharp.ANTLR4
 {
     public class AContextual : MiniCSharpParserBaseVisitor<object>
     {
         private TablaSimbolos laTabla;
+        
+        //ErrorMsgs guardara todos los errores que reporten los Visits.
         public ArrayList<String> errorMsgs = new ArrayList<String>();
+        
+        //DesignatorAssign y MethodType manejaran los tipos qye tiene un designator y un metodo respectivamente.
         public int designatorAssign;
         public int methodType;
+        
+        //IsList, IsArray y IsVarInClass verificaran si un identificador es tipo lista, o es tipo array o si es una
+        //variable de una clase respectivamente.
+        
+        //IsList es para cuando se crea un identificador de tipo list, se almacena su tipo, se inserta en la tabla el
+        //tipo list y su segundo tipo.
         public bool isList;
+        
+        //IsArray es para cuando se crea un identificador de tipo list, se almacena su tipo, se inserta en la tabla el
+        //tipo list y su segundo tipo.
         public bool isArray;
-        public TablaSimbolos.Ident instanceToken;
+        
+        //IsVarInClass es utilizado para verificar que no se cree un identificador de tipo inst dentro de una clase.
         public bool isVarInClass;
+        
+        //InstanceToken verificara un indentificador de tipo inst antes de modificar su instanceToken si ya posee
+        //uno, en caso contrario, se modificara y almacenara.
+        public TablaSimbolos.Ident instanceToken;
         
         public AContextual(){
             this.laTabla = new TablaSimbolos();
@@ -64,9 +83,10 @@ namespace MiniCSharp.ANTLR4
             laTabla.insertar(new MyToken("i"), 0,-1, false, false, true, null);
         }
         
+        //Este metodo verificara si ErrorMsgs posee almenos un mensaje de error de los Visits.
         public Boolean hasErrors()
         {
-            return this.errorMsgs.Count > 0;
+            return errorMsgs.Count > 0;
         }
         
         public String toString()
@@ -80,6 +100,7 @@ namespace MiniCSharp.ANTLR4
             return builder.ToString();
         }
         
+        //Todos los tipos que maneja MiniCSharp.
         private String showType(int type){
             switch(type){
                 case 0: return "int";
@@ -106,6 +127,8 @@ namespace MiniCSharp.ANTLR4
         private String showErrorPosition(IToken t){
             return " Fila: "+t.Line + " - Columna: " + (t.Column+1);
         }
+        
+        //Todos los operadores multitipo.
         private bool isMultitype(String op){
             switch (op){
                 case "==": return true;
@@ -113,6 +136,9 @@ namespace MiniCSharp.ANTLR4
                 default:  return false;
             }
         }
+        
+        //program: using* CLASS IDENTIFIER LBRACE (varDecl | classDecl | methodDecl)* RBRACE EOF             #programAST;
+        //esto hace...
         public override object VisitProgramAST(MiniCSharpParser.ProgramASTContext context)
         {
             for (int i = 0; context.@using().Count() > i; i++)
@@ -320,7 +346,7 @@ namespace MiniCSharp.ANTLR4
 
                     if (comprobacion.Equals(false) && idType!=11)
                     {
-                        errorMsgs.Add("\n" +"Error de metodo, el metodo " + context.IDENTIFIER().GetText() + " usa el tipo " + showType(idType) + " y debe retornar en el mismo nivel al menos una vez" + "."+ showErrorPosition(context.IDENTIFIER().Symbol));
+                        errorMsgs.Add("\n" +"Error de metodo, el metodo " + context.IDENTIFIER().GetText() + " usa el tipo " + showType(idType) + " y debe retornar en el mismo nivel al menos una vez con el mismo tipo" + "."+ showErrorPosition(context.IDENTIFIER().Symbol));
                     }
 
                 }else
@@ -958,6 +984,9 @@ namespace MiniCSharp.ANTLR4
                 {
                     errorMsgs.Add("\n" +"Error de metodo, el metodo \"" +  i.GetToken().Text + "\" usa el tipo \"" + showType(methodType) + "\" y se esta retornando el tipo \"" + showType(result) + "\"."+ showErrorPosition(context.expr().Start));
                 }
+            }else if (context.expr() == null && tipoID != 11)
+            {
+                errorMsgs.Add("\n" +"Error de metodo, el metodo \"" +  i.GetToken().Text + "\" usa el tipo \"" + showType(tipoID) + "\" y no se esta retornando el mismo tipo."+ showErrorPosition(context.RETURN().Symbol));
             }
             methodType = -1;
             return result;
