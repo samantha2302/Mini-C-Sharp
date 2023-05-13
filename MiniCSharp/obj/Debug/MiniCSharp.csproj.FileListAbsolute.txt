@@ -107,3 +107,4 @@ C:\Users\playa\Desktop\Proyecto 2\Mini-C-Sharp\MiniCSharp\obj\Debug\MiniCSharp.c
 C:\Users\playa\Desktop\Proyecto 2\Mini-C-Sharp\MiniCSharp\obj\Debug\MiniCSharp.exe
 C:\Users\playa\Desktop\Proyecto 2\Mini-C-Sharp\MiniCSharp\obj\Debug\MiniCSharp.pdb
 C:\Users\playa\Desktop\Proyecto 2\Mini-C-Sharp\MiniCSharp\obj\Debug\MiniCSharp.Interfaz.Prueba.resources
+C:\Users\Sam\Desktop\Mini-C-Sharp\MiniCSharp\obj\Debug\MiniCSharp.Interfaz.Prueba.resources
