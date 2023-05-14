@@ -942,7 +942,7 @@ namespace MiniCSharp.ANTLR4
         // FOR LPAREN expr SEMICOLON (condition)? SEMICOLON (statement)? RPAREN statement
         // Se compone de una expresión que puede ser cualquier cosa, la condicion y luego un incremento, esta 
         // funcion realiza verifica y visita lo anterior. 
-        // Para el for necesita una expresion, condicion, un incremento o decremento y un statement obligatorio
+        // Para el for necesita una expresion, condicion y un statement obligatorio
         public override object VisitForStatementAST(MiniCSharpParser.ForStatementASTContext context)
         {
             Visit(context.expr());
