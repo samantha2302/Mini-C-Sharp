@@ -160,6 +160,7 @@
     <Content Include="Pruebas_Codigo\test_2.txt" />
     <Content Include="Pruebas_Codigo\test_1.txt" />
     <Content Include="Prueba\Prueba.txt" />
+    <Content Include="Prueba\PruebaSam.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -298,7 +298,8 @@ namespace MiniCSharp.ANTLR4
 
         // classDecl: CLASS IDENTIFIER LBRACE varDecl* RBRACE
         // Verifica que ese identificador del método no exista en la tabla de
-        // símbolos, además, verifica que var declaration no esté dentro ya que está en otro nivel.
+        // símbolos, además, verifica que var declaration no esté dentro ya que está en otro nivel, 
+        // que las variables de var declaration no se repitan en el mismo nivel
         public override object VisitClassDeclAST(MiniCSharpParser.ClassDeclASTContext context)
         {
             try {
@@ -323,7 +324,7 @@ namespace MiniCSharp.ANTLR4
 
         // methodDecl: (type | VOID) IDENTIFIER LPAREN (formPars)? RPAREN block
         // Para está regla, si no existe un void o alguno de los tipos existentes,
-        // no funciona y debe de existir el identificador en la tabla símbolos, por último,
+        // no funciona y debe de no existir el identificador en la tabla símbolos, por último,
         // tiene que retornar el mismo tipo con el que fue declarado y en el mismo nivel,
         // además, la regla formPars es para los parámetros del método.
         public override object VisitMethodDeclAST(MiniCSharpParser.MethodDeclASTContext context)
@@ -407,6 +408,7 @@ namespace MiniCSharp.ANTLR4
         // además, están los que tienen un signo de pregunta, eso significa que puede también ser
         // nulo. Con el tema de las listas, siempre debe de decir que tipo que va a hacer la lista
         // y llevar “<>” se forma obligatoria.
+        // Y LBRACK y RBRACK es para los arrays, eso si, antes declarando el tipo.
         public override object VisitTypeAST(MiniCSharpParser.TypeASTContext context)
         {
             int result=-1;
@@ -663,6 +665,7 @@ namespace MiniCSharp.ANTLR4
         // Verifica que el designator exista en la tabla de símbolos pero se debe de usar en un
         // block y debe de estar en el mismo nivel del método. Los metodos al crearse necesitan parametros
         // cuando se instancia, verifica la cantidad de parametros y que esten en el mismo orden de tipo. 
+        // Los ++ y +- son para los doubles y enteros.
         public override object VisitDesignatorStatementAST(MiniCSharpParser.DesignatorStatementASTContext context)
         {
             try
@@ -939,6 +942,7 @@ namespace MiniCSharp.ANTLR4
         // FOR LPAREN expr SEMICOLON (condition)? SEMICOLON (statement)? RPAREN statement
         // Se compone de una expresión que puede ser cualquier cosa, la condicion y luego un incremento, esta 
         // funcion realiza verifica y visita lo anterior. 
+        // Para el for necesita una expresion, condicion, un incremento o decremento y un statement obligatorio
         public override object VisitForStatementAST(MiniCSharpParser.ForStatementASTContext context)
         {
             Visit(context.expr());
@@ -1037,7 +1041,7 @@ namespace MiniCSharp.ANTLR4
         }
 
         // WRITE LPAREN expr (COMMA NUMBER)? RPAREN SEMICOLON
-        // Realiza visita a expr
+        // Realiza visita a expr y puede tener un numero o no
         public override object VisitWriteStatementAST(MiniCSharpParser.WriteStatementASTContext context)
         {
             Visit(context.expr());
@@ -1077,7 +1081,8 @@ namespace MiniCSharp.ANTLR4
         }
 
         // actPars: expr (COMMA expr)*
-        // Este visit es para la verificación de un designator. 
+        // Este visit es para la verificación de un designator.
+        // Es para visitar los parametros de un metodo.
         public override object VisitActParsAST(MiniCSharpParser.ActParsASTContext context)
         {
             int result = -1;
@@ -1185,7 +1190,7 @@ namespace MiniCSharp.ANTLR4
         }
 
         // expr: (MINUS)? (cast)? term (addop term)*
-        // Se puede usar un menos si el casto es válido, que el designator es válido,
+        // Se puede usar un menos si el casteo es válido, que el designator es válido,
         // que si se realiza un casteo que sea valido, ya sea de entero a double y asi 
         public override object VisitExprAST(MiniCSharpParser.ExprASTContext context)
         {
@@ -1561,6 +1566,7 @@ namespace MiniCSharp.ANTLR4
         }
 
         // term: factor (mulop factor)*
+        // Se hace visita a factor. 
         public override object VisitTermAST(MiniCSharpParser.TermASTContext context)
         {
             int result = -1;
@@ -1637,7 +1643,8 @@ namespace MiniCSharp.ANTLR4
         }
 
         // designator (LPAREN (actPars)? RPAREN)?
-        // Este visit devuelve un designator dependiendo si es un numero devuelve un cero, char 
+        // Este visit devuelve el valor un designator dependiendo si es un numero devuelve un cero, char y
+        // tambien se devuelve el tipo de los metodos. 
         public override object VisitDesignatorFactorAST(MiniCSharpParser.DesignatorFactorASTContext context)
         {
             int result = -1;
@@ -1856,7 +1863,7 @@ namespace MiniCSharp.ANTLR4
         }
 
         // NEW IDENTIFIER
-        // Busca el token en la tabla de simbolos y lo verifica
+        // Busca el token en la tabla de simbolos y lo verifica que sea una clase
         public override object VisitNewFactorAST(MiniCSharpParser.NewFactorASTContext context)
         {
             int result = -1;

@@ -1,4 +1,4 @@
-using otraClase;
+﻿using otraClase;
 using otraClase1;
 
 class P
@@ -28,7 +28,7 @@ class P
      }
  class prueba {
      int p;
-     // inst lk;
+     inst lk;
      int[] neg;
      list<int> uwu;
  }
@@ -38,18 +38,15 @@ class P
         inst jk;
         int? o;
         list<string> uwu;
-        // pruebay(1,"a");
-        pruebay('a', 2);
+        pruebay(1,"a");
         
         x=1;
         
         del(uwu,1);
-
-       // Tomar en cuenta que para los char se usa estas comillas '' y para string ""
-        //o = del(uwu, 1);
+       
+        x= del(uwu,"a");
         
         bool m;
-        return x;
         
     }
 }
