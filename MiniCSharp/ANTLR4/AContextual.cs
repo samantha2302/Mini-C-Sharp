@@ -189,8 +189,8 @@ namespace MiniCSharp.ANTLR4
                 Visit(context.methodDecl(i));
             }
             //MessageBox.Show(laTabla.imprimir()+ "\n" + toString());
-            MessageBox.Show(laTabla.imprimir());
-            MessageBox.Show(toString());
+            //MessageBox.Show(laTabla.imprimir());
+            //MessageBox.Show(toString());
             laTabla.closeScope();
             return null;
         }
