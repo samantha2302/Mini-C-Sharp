@@ -88,10 +88,9 @@ namespace MiniCSharp.Interfaz
                     mv.Visit(tree);
                     
                     CodeGen visitor = new CodeGen();
+                    visitor.cambiarNombreTxt("MITXT");
                     Type pointType = (Type) visitor.Visit(tree);
-                
                     object ptInstance = Activator.CreateInstance(pointType, null);
-
                     pointType.InvokeMember("Main",
                         BindingFlags.InvokeMethod,
                         null,

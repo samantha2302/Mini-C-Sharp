@@ -3,53 +3,10 @@ using otraClase1;
 
 class P
 {
-    class Table {
-        int p;
-        int[] neg;
-        list<int> uwu;
-    }
-    
-    //class Table {
-        //int[] pos;
-        //int[] neg;
-    //}
-     //int x, i;
-     int m;
-     int p;
-     
-   int pruebay (char x, double b)
-     {
-        int o;
-        return o;
-        {
-            return 1;
-        }
-        
-     }
- class prueba {
-     int p;
-     // inst lk;
-     int[] neg;
-     list<int> uwu;
- }
+
   int Main ()
     {
         int x, i;
-        inst jk;
-        int? o;
-        list<string> uwu;
-        // pruebay(1,"a");
-        pruebay('a', 2);
-        
-        x=1;
-        
-        del(uwu,1);
-
-       // Tomar en cuenta que para los char se usa estas comillas '' y para string ""
-        //o = del(uwu, 1);
-        
-        bool m;
-        return x;
         
     }
 }
