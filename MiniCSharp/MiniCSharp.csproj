@@ -84,6 +84,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ANTLR4\AContextual.cs" />
+    <Compile Include="ANTLR4\CodeGen.cs" />
     <Compile Include="ANTLR4\generated\MiniCSharpParser.cs" />
     <Compile Include="ANTLR4\generated\MiniCSharpParserBaseVisitor.cs" />
     <Compile Include="ANTLR4\generated\MiniCSharpParserVisitor.cs" />

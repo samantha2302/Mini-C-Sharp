@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 using System.IO;
+using System.Reflection;
 using Antlr4.Runtime;
 using generated;
 using MiniCSharp.ANTLR4;
@@ -44,6 +45,7 @@ namespace MiniCSharp.Interfaz
             CommonTokenStream tokens = null;
             MyErrorListener errorListener = null;
             MySyntaxErrorListener syntaxErrorListener = null;
+            CodeGen codeGen = null;
             var defaultErrorStrategy = new MyDefaultErrorStrategy();
             IParseTree tree;
             try
@@ -84,6 +86,17 @@ namespace MiniCSharp.Interfaz
                     //form.ShowDialog();
                     AContextual mv = new AContextual();
                     mv.Visit(tree);
+                    
+                    CodeGen visitor = new CodeGen();
+                    Type pointType = (Type) visitor.Visit(tree);
+                
+                    object ptInstance = Activator.CreateInstance(pointType, null);
+
+                    pointType.InvokeMember("Main",
+                        BindingFlags.InvokeMethod,
+                        null,
+                        ptInstance,
+                        new object[0]);
                 }
                 else
                 {
