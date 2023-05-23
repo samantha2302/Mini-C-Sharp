@@ -45,6 +45,7 @@ namespace MiniCSharp.Interfaz
             CommonTokenStream tokens = null;
             MyErrorListener errorListener = null;
             MySyntaxErrorListener syntaxErrorListener = null;
+            AContextual aContextual = null;
             CodeGen codeGen = null;
             var defaultErrorStrategy = new MyDefaultErrorStrategy();
             IParseTree tree;
@@ -59,6 +60,7 @@ namespace MiniCSharp.Interfaz
 
                 errorListener = new MyErrorListener();
                 syntaxErrorListener = new MySyntaxErrorListener();
+                aContextual = new AContextual();
 
                 inst.RemoveErrorListeners();
                 inst.AddErrorListener(syntaxErrorListener);
@@ -74,8 +76,10 @@ namespace MiniCSharp.Interfaz
 
                 TreeNode rootNode = GenerateTreeNode(tree, parser);
                 treeView.Nodes.Add(rootNode);
+                
+                aContextual.Visit(tree);
 
-                if (errorListener.hasErrors() == false && syntaxErrorListener.hasErrors() == false)
+                if (errorListener.hasErrors() == false && syntaxErrorListener.hasErrors() == false && aContextual.hasErrors() == false)
                 {
                     cmdout.Text = "Compilacion exitosa\n";
                     Form form = new Form();
@@ -84,12 +88,9 @@ namespace MiniCSharp.Interfaz
                     form.Width = 400;
                     form.Height = 500;
                     //form.ShowDialog();
-                    AContextual mv = new AContextual();
-                    mv.Visit(tree);
                     
-                    CodeGen visitor = new CodeGen();
-                    visitor.cambiarNombreTxt("MITXT");
-                    Type pointType = (Type) visitor.Visit(tree);
+                    codeGen = new CodeGen("MITXT");
+                    Type pointType = (Type) codeGen.Visit(tree);
                     object ptInstance = Activator.CreateInstance(pointType, null);
                     pointType.InvokeMember("Main",
                         BindingFlags.InvokeMethod,
@@ -108,6 +109,10 @@ namespace MiniCSharp.Interfaz
                     if (syntaxErrorListener.hasErrors())
                     {
                         cmdout.Text += syntaxErrorListener.toString();
+                    }
+                    if (aContextual.hasErrors())
+                    {
+                        cmdout.Text += aContextual.toString();
                     }
                 }
 

@@ -4,18 +4,14 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading;
+using System.Windows.Forms;
 using generated;
+using Label = System.Reflection.Emit.Label;
 
 namespace MiniCSharp.ANTLR4
 {
     public class CodeGen : MiniCSharpParserBaseVisitor<object>
     {
-        private string nombreTxt = "";
-        public void cambiarNombreTxt(string nombre)
-        {
-            nombreTxt = nombre;
-        }
-        
         private Type pointType = null;
         private string asmFileName = "result.exe";
         private AssemblyName myAsmName = new AssemblyName();
@@ -36,14 +32,14 @@ namespace MiniCSharp.ANTLR4
 
         private bool isArgument = false;
         
-        public CodeGen()
+        public CodeGen(string txt)
         {
             metodosGlobales = new List<MethodBuilder>();
             
-            myAsmName.Name = nombreTxt;
+            myAsmName.Name = txt;
             myAsmBldr = currentDom.DefineDynamicAssembly(myAsmName, AssemblyBuilderAccess.RunAndSave);
             myModuleBldr = myAsmBldr.DefineDynamicModule(asmFileName);
-            myTypeBldr = myModuleBldr.DefineType(nombreTxt+"Class");
+            myTypeBldr = myModuleBldr.DefineType(txt+"Class");
             
             Type objType = Type.GetType("System.Object");
             objCtor = objType.GetConstructor(new Type[0]);
@@ -114,6 +110,9 @@ namespace MiniCSharp.ANTLR4
             if (tipo.Equals("inst"))
             {
                 return null;/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            }if (tipo.Equals("void"))
+            {
+                return typeof(void);
             }
             
             
@@ -213,10 +212,6 @@ namespace MiniCSharp.ANTLR4
             {
                 Visit(context.@using(a));
             }
-            
-            pointType = myTypeBldr.CreateType(); //crea la clase para ser luego instanciada
-            myAsmBldr.SetEntryPoint(pointMainBldr);
-            myAsmBldr.Save(asmFileName);
 
             for (int i = 0; context.varDecl().Count() > i; i++)
             {
@@ -232,7 +227,10 @@ namespace MiniCSharp.ANTLR4
             {
                 Visit(context.methodDecl(i));
             }
-
+            
+            pointType = myTypeBldr.CreateType(); //crea la clase para ser luego instanciada
+            myAsmBldr.SetEntryPoint(pointMainBldr);
+            myAsmBldr.Save(asmFileName);
             return pointType;
         }
 
@@ -245,13 +243,13 @@ namespace MiniCSharp.ANTLR4
         {
             ILGenerator currentIL = currentMethodBldr.GetILGenerator();
 
-            Visit(context.type());
+            //Visit(context.type());
             
-            currentIL.DeclareLocal((Type)Visit(context.IDENTIFIER(0)));
+            currentIL.DeclareLocal((Type)Visit(context.type()));
 
             for (int i = 1; context.IDENTIFIER().Count() > i; i++)
             {
-                currentIL.DeclareLocal((Type)Visit(context.IDENTIFIER(i)));
+                currentIL.DeclareLocal((Type)Visit(context.type()));
             }
             
             return null;
@@ -268,59 +266,101 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitMethodDeclAST(MiniCSharpParser.MethodDeclASTContext context)
         {
-            if (context.VOID() == null)
+            Type tipoMetodo = null;
+            if (context.VOID() != null)
             {
-                Visit(context.type());
+                tipoMetodo = verificarTipoRetorno("void");
+            }else if (context.VOID() == null)
+            {
+                tipoMetodo = verificarTipoRetorno((string) Visit(context.type()));
             }
+            
 
+            //se declara el método actual utilizando los datos optenidos en las visitas 
+            currentMethodBldr = myTypeBldr.DefineMethod(context.IDENTIFIER().GetText(),
+                MethodAttributes.Public |
+                MethodAttributes.Static,
+                tipoMetodo,
+                null);//los parámetros son null porque se tiene que visitar despues de declarar el método... se cambiará luego
+
+            //se visitan los parámetros para definir el arreglo de tipos de cada uno de los parámetros formales... si es que hay (not null)
+            Type[] parameters = null;
             if (context.formPars() != null)
             {
-                Visit(context.formPars());
+                parameters = (Type[]) Visit(context.formPars());
+                //Visit(context.formPars());
             }
+            
+            //después de visitar los parámetros, se cambia el signatura que requiere la definición del método
+            currentMethodBldr.SetParameters(parameters);
 
             Visit(context.block());
+            
+            ILGenerator currentIL = currentMethodBldr.GetILGenerator();
+            currentIL.Emit(OpCodes.Ret); 
+            
+            //Se agrega el método recién creado a la lista de mpetodos globales para no perder su referencia cuando se creen más métodos
+            metodosGlobales.Add(currentMethodBldr);
+            if (context.IDENTIFIER().GetText().Equals("Main")) {
+                //el puntero al metodo principal se setea cuando es el Main quien se declara
+                pointMainBldr = currentMethodBldr;
+            }
             
             return null;
         }
 
         public override object VisitFormParsAST(MiniCSharpParser.FormParsASTContext context)
         {
-            Visit(context.type(0));
+            ILGenerator currentIL = currentMethodBldr.GetILGenerator();
+            isArgument = true;
             
-            for (int i = 1; context.type().Count() > i; i++)
+            //se construye el arreglo de tipos necesario para enviarle a la definición de métodos
+            Type[] result = new Type[context.type().Length];
+
+            for (int i = 0; context.type().Count() > i; i++)
             {
-                Visit(context.type(i));
+                result[i] = (Type)Visit(context.type(i));
+                currentIL.Emit(OpCodes.Ldarg, i);
+                currentIL.DeclareLocal(result[i]);
+                currentIL.Emit(OpCodes.Stloc, i); //TODO se debería llevar una lista de argumentos para saber cual es cual cuando se deban llamar
+                //currentIL.Emit(OpCodes.Ldloc, 0);//solo para la prueba, el 0 es el que se va a llamar
             }
             return null;
         }
 
         public override object VisitTypeAST(MiniCSharpParser.TypeASTContext context)
         {
-            //PENSAAAR
+            //PENSAAARf
 
-            if (context.QMARK() == null && context.LESS_THAN() == null && context.LBRACK() == null)
+            if (context.QMARK(0) == null && context.LESS_THAN() == null && context.LBRACK() == null)
             {
                 return context.IDENTIFIER(0).GetText();
+                //return verificarTipoRetorno(context.IDENTIFIER(0).GetText());
             }
-            if (context.QMARK() != null && context.LESS_THAN() == null && context.LBRACK() == null)
+            if (context.QMARK(0) != null && context.LESS_THAN() == null && context.LBRACK() == null)
             {
                 return context.IDENTIFIER(0).GetText()+"?";
+                //return verificarTipoRetorno(context.IDENTIFIER(0).GetText()+"?");
             }
-            if (context.QMARK() == null && context.LESS_THAN() != null && context.LBRACK() == null)
+            if (context.QMARK(0) == null && context.LESS_THAN() != null && context.LBRACK() == null)
             {
                 return "List"+"<"+context.IDENTIFIER(0).GetText()+">";
+                //return verificarTipoRetorno("List"+"<"+context.IDENTIFIER(0).GetText()+">");
             }
-            if (context.QMARK() != null && context.LESS_THAN() != null && context.LBRACK() == null)
+            if (context.QMARK(0) != null && context.LESS_THAN() != null && context.LBRACK() == null)
             {
                 return "List"+"<"+context.IDENTIFIER(0).GetText()+"?"+">";
+                //return verificarTipoRetorno("List"+"<"+context.IDENTIFIER(0).GetText()+"?"+">");
             }
-            if (context.QMARK() == null && context.LESS_THAN() == null && context.LBRACK() != null)
+            if (context.QMARK(0) == null && context.LESS_THAN() == null && context.LBRACK() != null)
             {
                 return context.IDENTIFIER(0).GetText()+"[]";
+                //return verificarTipoRetorno(context.IDENTIFIER(0).GetText()+"[]");
             }
-            if (context.QMARK() != null && context.LESS_THAN() == null && context.LBRACK() != null)
+            if (context.QMARK(0) != null && context.LESS_THAN() == null && context.LBRACK() != null)
             {
                 return context.IDENTIFIER(0).GetText()+"?"+"[]";
+                //return verificarTipoRetorno(context.IDENTIFIER(0).GetText()+"?"+"[]");
             }
             
             return null;
@@ -333,6 +373,11 @@ namespace MiniCSharp.ANTLR4
             if (context.ASSIGN() != null)
             {
                 Visit(context.expr());
+                
+                //se asigna el valor a la variable
+                //TODO hay que discriminar si es local o global porque la instrucción a generar es distinta según el caso
+                ILGenerator currentIL = currentMethodBldr.GetILGenerator();
+                currentIL.Emit(OpCodes.Stloc,0); //TODO: e debe utilizar el índice que corresponde a la variable y no 0 siempre
             }else if (context.LPAREN() != null)
             {
                 Visit(context.actPars());
@@ -350,8 +395,18 @@ namespace MiniCSharp.ANTLR4
         public override object VisitIfStatementAST(MiniCSharpParser.IfStatementASTContext context)
         {
             Visit(context.condition());
+            
+            //definir etiqueta
+            ILGenerator currentIL = currentMethodBldr.GetILGenerator();
+            Label labelFalse = currentIL.DefineLabel();
+            
+            //saltar if false
+            currentIL.Emit(OpCodes.Brfalse,labelFalse);
 
             Visit(context.statement(0));
+            
+            //marcar etiqueta
+            currentIL.MarkLabel(labelFalse);
 
             if (context.ELSE() != null)
             {
@@ -412,12 +467,19 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitWriteStatementAST(MiniCSharpParser.WriteStatementASTContext context)
         {
+            ILGenerator currentIL = currentMethodBldr.GetILGenerator();
+            
+            // se debe visitar a los parámetros reales para generar el código que corresponda
             Visit(context.expr());
             
-            if (context.COMMA() != null)
-            {
+            //TODO: debe conocerse el tipo de la expresión para saber a cual write llamar
+            currentIL.EmitCall(OpCodes.Call, writeMI/*OJO... EL QUE CORRESPONDA SEGUN TIPO*/, null);
+            //Visit(context.expr());
+            
+            //if (context.COMMA() != null)
+            //{
                ///PENSAR
-            }
+            //}
             return null;
         }
 
@@ -544,31 +606,86 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitNumberFactorAST(MiniCSharpParser.NumberFactorASTContext context)
         {
-            ///PENSAR
+            ILGenerator currentIL = currentMethodBldr.GetILGenerator();
+            try
+            {
+                currentIL.Emit(OpCodes.Ldc_I4 , Int32.Parse(context.NUMBER().GetText()));
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine($"Unable to parse the number expression!!!");
+            }
             return null;
         }
 
         public override object VisitCharFactorAST(MiniCSharpParser.CharFactorASTContext context)
         {
-            ///PENSAR
+            ILGenerator currentIL = currentMethodBldr.GetILGenerator();
+            try
+            {
+                currentIL.Emit(OpCodes.Ldc_I4 , char.Parse(context.CHAR_CONSTANT().GetText()));
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine($"Unable to parse the number expression!!!");
+            }
             return null;
         }
 
         public override object VisitStringFactorAST(MiniCSharpParser.StringFactorASTContext context)
         {
-            ///PENSAR
+            ILGenerator currentIL = currentMethodBldr.GetILGenerator();
+            try
+            {
+                currentIL.Emit(OpCodes.Ldstr, (context.STRING_CONSTANT().GetText()));
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine($"Unable to parse the number expression!!!");
+            }
             return null;
         }
 
         public override object VisitDoubleFactorAST(MiniCSharpParser.DoubleFactorASTContext context)
         {
-            ///PENSAR
+            ILGenerator currentIL = currentMethodBldr.GetILGenerator();
+            try
+            {
+                currentIL.Emit(OpCodes.Ldc_R8 , float.Parse(context.DOUBLE_CONST().GetText()));
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine($"Unable to parse the number expression!!!");
+            }
             return null;
         }
 
         public override object VisitBoolFactorAST(MiniCSharpParser.BoolFactorASTContext context)
         {
-            ///PENSAR
+            if (context.TRUE() != null)
+            {
+                ILGenerator currentIL = currentMethodBldr.GetILGenerator();
+                try
+                {
+                    currentIL.Emit(OpCodes.Ldc_I4, (context.TRUE().GetText()));
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine($"Unable to parse the number expression!!!");
+                }
+            }
+            else if (context.FALSE() != null)
+            {
+                ILGenerator currentIL = currentMethodBldr.GetILGenerator();
+                try
+                {
+                    currentIL.Emit(OpCodes.Ldc_I4, (context.FALSE().GetText()));
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine($"Unable to parse the number expression!!!");
+                }
+            }
             return null;
         }
 

@@ -1,12 +1,13 @@
 using otraClase;
 using otraClase1;
 
-class P
+class prueba
 {
-
-  int Main ()
+  int resul(){
+    return 1;
+  }
+    void Main ()
     {
-        int x, i;
-        
+      int x, i;
     }
 }
