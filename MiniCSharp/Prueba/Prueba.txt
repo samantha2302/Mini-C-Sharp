@@ -4,10 +4,17 @@ using otraClase1;
 class prueba
 {
   int resul(){
-    return 1;
+    int p;
+    p=1000;
+    write(p);
+    return 2;
   }
     void Main ()
     {
-      int x, i;
+      int x;
+      resul();
+      x=100;
+      x=100;
+      write(x);
     }
 }

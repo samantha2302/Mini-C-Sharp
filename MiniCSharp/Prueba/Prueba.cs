@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows.Forms;
 using System.IO;
 using System.Reflection;
@@ -97,6 +98,16 @@ namespace MiniCSharp.Interfaz
                         null,
                         ptInstance,
                         new object[0]);
+
+                    Process myProcess = new Process();
+                    myProcess.StartInfo.UseShellExecute = false;
+                    myProcess.StartInfo.FileName = @"../../bin/Debug/result.exe";
+                    myProcess.StartInfo.RedirectStandardOutput = true;
+                    myProcess.Start();
+                    
+                    MessageBox.Show(myProcess.StandardOutput.ReadToEnd());
+                    
+                    myProcess.WaitForExit();
                 }
                 else
                 {
@@ -122,7 +133,6 @@ namespace MiniCSharp.Interfaz
                 Console.WriteLine("No hay archivo");
                 throw;
             }
-
         }
 
         private void Prueba_Load(object sender, EventArgs e)
