@@ -7,14 +7,14 @@ class prueba
     int p;
     p=1000;
     write(p);
-    return 2;
+    return 2+2;
   }
     void Main ()
     {
       int x;
-      resul();
       x=100;
-      x=100;
+      x=200;
+      x=resul();
       write(x);
     }
 }

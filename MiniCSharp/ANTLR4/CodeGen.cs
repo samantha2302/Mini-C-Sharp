@@ -326,10 +326,11 @@ namespace MiniCSharp.ANTLR4
             
             //se construye el arreglo de tipos necesario para enviarle a la definición de métodos
             Type[] result = new Type[context.type().Length];
+            //POSIBLE ERROR POR TEXTO
 
             for (int i = 0; context.type().Count() > i; i++)
             {
-                result[i] = (Type)Visit(context.type(i));
+                result[i] = verificarTipoRetorno((string)Visit(context.type(i)));
                 currentIL.Emit(OpCodes.Ldarg, i);
                 currentIL.DeclareLocal(result[i]);
                 currentIL.Emit(OpCodes.Stloc, i); //TODO se debería llevar una lista de argumentos para saber cual es cual cuando se deban llamar
@@ -380,7 +381,7 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitDesignatorStatementAST(MiniCSharpParser.DesignatorStatementASTContext context)
         {
-            //Visit(context.designator());
+           // Visit(context.designator());
 
             if (context.ASSIGN() != null)
             {
@@ -393,13 +394,18 @@ namespace MiniCSharp.ANTLR4
             }else if (context.LPAREN() != null)
             {
                 ILGenerator currentIL = currentMethodBldr.GetILGenerator();
-                //Visit(context.actPars());
-                if (context.actPars() != null)
+                if(!context.designator().GetText().Equals("Main"))
                 {
-                    Visit(context.actPars());
+                    //MessageBox.Show(buscarMetodo("resul").ToString());
+                    // se debe visitar a los parámetros reales para generar el código que corresponda
+                    if (context.actPars() != null)
+                    {
+                        Visit(context.actPars());
+                    }
+                    //se busca el método en la lista de métodos globales para referenciarlo
+                    currentIL.Emit(OpCodes.Call, buscarMetodo(context.designator().GetText()));
+                    currentIL.Emit(OpCodes.Pop);
                 }
-                //se busca el método en la lista de métodos globales para referenciarlo
-                currentIL.Emit(OpCodes.Call, buscarMetodo(context.designator().GetText()));
             }else if (context.INCREMENT() != null)
             {
                 /////
@@ -617,11 +623,28 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitDesignatorFactorAST(MiniCSharpParser.DesignatorFactorASTContext context)
         {
-            Visit(context.designator());
+            if (context.LPAREN() == null)
+            {
+                Visit(context.designator());
+            }
 
             if (context.LPAREN() != null)
             {
-                Visit(context.actPars());
+                //Visit(context.actPars());
+                ILGenerator currentIL = currentMethodBldr.GetILGenerator();
+                if(!context.designator().GetText().Equals("Main"))
+                {
+                    //MessageBox.Show(buscarMetodo("resul").ToString());
+                    // se debe visitar a los parámetros reales para generar el código que corresponda
+                    if (context.actPars() != null)
+                    {
+                        Visit(context.actPars());
+                    }
+                    //se busca el método en la lista de métodos globales para referenciarlo
+                    currentIL.Emit(OpCodes.Call, buscarMetodo(context.designator().GetText()));
+                    //currentIL.Emit(OpCodes.Pop);
+                    //currentIL.Emit(OpCodes.Stloc, 0); //TODO se debería llevar una lista de argumentos para saber cual es cual cuando se deban llamar
+                }
             }
             return null;
         }
