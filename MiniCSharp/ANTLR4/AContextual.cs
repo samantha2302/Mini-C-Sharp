@@ -1675,17 +1675,21 @@ namespace MiniCSharp.ANTLR4
                     resul.Reverse();
 
                     int cantidad = 0;
-                    
-                    for (int sum2 = 0; context.actPars().ChildCount > sum2; sum2++)
-                    {
-                        if (context.actPars().GetChild(sum2).GetText() != ",")
-                        {
-                            cantidad++;
-                        }
 
+                    if (context.actPars() != null)
+                    {
+
+                        for (int sum2 = 0; context.actPars().ChildCount > sum2; sum2++)
+                        {
+                            if (context.actPars().GetChild(sum2).GetText() != ",")
+                            {
+                                cantidad++;
+                            }
+
+                        }
                     }
 
-                    if (cantidad != resul.Count())
+                    if (cantidad != resul.Count() || resul.Count > cantidad)
                     {
                         errorMsgs.Add("\n" +"Error de metodo, el identificador \""+ i.GetToken().Text + "\" recibio menos o mas parametros de los solicitados." + showErrorPosition(context.designator().Start));
                     }

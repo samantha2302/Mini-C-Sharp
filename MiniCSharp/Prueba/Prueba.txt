@@ -3,8 +3,7 @@ using otraClase1;
 
 class prueba
 {
-  int resul(){
-    int p;
+  int resul(int k){
     p=1000;
     write(p);
     return 2+2;
