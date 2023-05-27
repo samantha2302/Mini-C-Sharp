@@ -218,9 +218,8 @@ namespace MiniCSharp.ANTLR4
                     return null;
                 }
 
-                if (i == null && laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) == -1)
+                if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) == -1 && laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), 0) == -1)
                 {
-                    MessageBox.Show(context.IDENTIFIER(0).GetText());
                     int verificar = -1;
                     if (laTabla.buscarNivelMetodo() != -1)
                     {
@@ -257,7 +256,7 @@ namespace MiniCSharp.ANTLR4
                 {
                     IToken idN = context.IDENTIFIER(sum).Symbol;
                     TablaSimbolos.Ident iN = laTabla.buscar(context.IDENTIFIER(sum).GetText());
-                    if (iN == null || iN != null && laTabla.buscarNivel(context.IDENTIFIER(sum).GetText(), laTabla.obtenerNivelActual()) == -1) {
+                    if (laTabla.buscarNivel(context.IDENTIFIER(sum).GetText(), laTabla.obtenerNivelActual()) == -1 && laTabla.buscarNivel(context.IDENTIFIER(sum).GetText(), 0) == -1){
                         
                         int verificar = -1;
                         if (laTabla.buscarNivelMetodo() != -1)

@@ -13,11 +13,16 @@ class prueba
     void Main ()
     {
       int p;
-      int x,y;
       p=10;
       x=100;
       x=200;
       y=1000000;
+      {
+      int k;
+      k=10;
+      }
+      k=10;
+
       write(y);
       //x=resul(1)+100;
       write(x);
