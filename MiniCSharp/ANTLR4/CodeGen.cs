@@ -36,8 +36,17 @@ namespace MiniCSharp.ANTLR4
         
         private int nivelActual = -1;
         
+        public int decSumBlock;
+
+        public int totalSumBlock;
+
+        private FieldBuilder currentFieldBldr;
+        
+        private Dictionary<string, LocalBuilder> variablesLocales;
+        
         public CodeGen(string txt)
         {
+            variablesLocales = new Dictionary<string, LocalBuilder>();
             metodosGlobales = new List<MethodBuilder>();
             variablesGlobales = new List<FieldBuilder>();
 
@@ -70,12 +79,28 @@ namespace MiniCSharp.ANTLR4
             
         }
         
+        public void declararVariableLocal(string nombreVariable, LocalBuilder localBuilder)
+        {
+            variablesLocales[nombreVariable] = localBuilder;
+        }
+        
         private MethodBuilder buscarMetodo(String name)
         {
             foreach (var method in metodosGlobales)
             {
                 if (method.Name.Equals(name))
                     return method;
+            }
+
+            return null;
+        }
+        
+        private FieldBuilder buscarVariableGlobal(String name)
+        {
+            foreach (var global in variablesGlobales)
+            {
+                if (global.Name.Equals(name))
+                    return global;
             }
 
             return null;
@@ -275,8 +300,10 @@ namespace MiniCSharp.ANTLR4
                     string variableName = context.IDENTIFIER(i).GetText();
                     Type variableType = verificarTipoRetorno((string)Visit(context.type()));
 
-                    FieldBuilder fieldBuilder = myTypeBldr.DefineField(variableName, variableType, FieldAttributes.Public | FieldAttributes.Static);
-                    variablesGlobales.Add(fieldBuilder);
+                   // FieldBuilder fieldBuilder = myTypeBldr.DefineField(variableName, variableType, FieldAttributes.Public | FieldAttributes.Static);
+
+                   currentFieldBldr = myTypeBldr.DefineField(variableName, variableType, FieldAttributes.Public | FieldAttributes.Static);
+                   variablesGlobales.Add(currentFieldBldr);
                     //fieldBuilder.SetValue(null, null); // Asignar un valor nulo a la variable global
                 }
 
@@ -288,6 +315,7 @@ namespace MiniCSharp.ANTLR4
                 for (int i = 0; context.IDENTIFIER().Count() > i; i++)
                 {
                     currentIL.DeclareLocal(verificarTipoRetorno((string) Visit(context.type())));
+                    declararVariableLocal(context.IDENTIFIER(i).GetText(),currentIL.DeclareLocal(verificarTipoRetorno((string) Visit(context.type()))));
                 }
                 
             }
@@ -329,12 +357,13 @@ namespace MiniCSharp.ANTLR4
                 parameters = (Type[]) Visit(context.formPars());
                 //Visit(context.formPars());
             }
-            
+
             //después de visitar los parámetros, se cambia el signatura que requiere la definición del método
             currentMethodBldr.SetParameters(parameters);
 
+            nivelActual--;
             Visit(context.block());
-            
+
             ILGenerator currentIL = currentMethodBldr.GetILGenerator();
             currentIL.Emit(OpCodes.Ret); 
             
@@ -419,7 +448,14 @@ namespace MiniCSharp.ANTLR4
                 //se asigna el valor a la variable
                 //TODO hay que discriminar si es local o global porque la instrucción a generar es distinta según el caso
                 ILGenerator currentIL = currentMethodBldr.GetILGenerator();
-                currentIL.Emit(OpCodes.Stloc,0); //TODO: e debe utilizar el índice que corresponde a la variable y no 0 siempre
+                if (buscarVariableGlobal(context.designator().GetText()) != null)
+                {
+                    currentIL.Emit(OpCodes.Stsfld,buscarVariableGlobal(context.designator().GetText())); //TODO: e debe utilizar el índice que corresponde a la variable y no 0 siempre
+                }
+                else
+                {
+                    currentIL.Emit(OpCodes.Stloc,variablesLocales[context.designator().GetText()]);
+                }
             }else if (context.LPAREN() != null)
             {
                 ILGenerator currentIL = currentMethodBldr.GetILGenerator();
@@ -543,7 +579,19 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitBlockStatementAST(MiniCSharpParser.BlockStatementASTContext context)
         {
+            decSumBlock++;
+            totalSumBlock++;
             Visit(context.block());
+            decSumBlock--;
+
+            if (decSumBlock == 0)
+            {
+                for (int i = 0; totalSumBlock > i; i++)
+                {
+                    nivelActual--;
+                }
+            }
+            
             return null;
         }
 
@@ -786,16 +834,29 @@ namespace MiniCSharp.ANTLR4
         {
             if (context.DOT(0) == null && context.LBRACK(0) == null)
             {
-                //todos los ID en exprresiones cargarán en el tope de la pila el valor que tiene la variable, sea local o global
-                //TODO: discriminar si se refiere a una variable global o local porque el bytecode debe ser diferente 
-                ILGenerator currentIL = currentMethodBldr.GetILGenerator();
-                if (isArgument)
+                if (buscarVariableGlobal(context.IDENTIFIER(0).GetText()) != null)
                 {
-                    currentIL.Emit(OpCodes.Ldarg,0); //no siempre será 0
+                    ILGenerator currentIL = currentMethodBldr.GetILGenerator();
+                    if (isArgument)
+                    {
+                        currentIL.Emit(OpCodes.Ldsfld, buscarVariableGlobal(context.IDENTIFIER(0).GetText())); //no siempre será 0
+                    }
+                    else
+                    {
+                        currentIL.Emit(OpCodes.Ldsfld, buscarVariableGlobal(context.IDENTIFIER(0).GetText())); //no siempre será 0
+                    }
                 }
                 else
                 {
-                    currentIL.Emit(OpCodes.Ldloc,0); //no siempre será 0    
+                    ILGenerator currentIL = currentMethodBldr.GetILGenerator();
+                    if (isArgument)
+                    {
+                        currentIL.Emit(OpCodes.Ldarg, variablesLocales[context.IDENTIFIER(0).GetText()]);
+                    }
+                    else
+                    {
+                        currentIL.Emit(OpCodes.Ldloc, variablesLocales[context.IDENTIFIER(0).GetText()]);
+                    }
                 }
             }
             if (context.DOT(0) != null)
@@ -807,6 +868,24 @@ namespace MiniCSharp.ANTLR4
             {
                 Visit(context.expr(i));
             }
+            
+            /*
+            for (int p = laTabla.buscarNivelMetodo(); laTabla.obtenerNivelActual() > p; p++)
+            {
+                if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), p) != -1)
+                {
+                    nivel = p;
+                    break;
+                }
+            }
+                    
+            if (nivel !=-1)
+            {
+                i = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), nivel);
+                result = i.GetType();
+            }
+            */
+            
             return null;
         }
 

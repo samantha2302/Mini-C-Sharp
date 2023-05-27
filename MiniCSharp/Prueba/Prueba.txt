@@ -4,28 +4,29 @@ using otraClase1;
 class prueba
 {
       int x,y;
-  int resul(int k){
-  int p;
-    p=1000;
-    //write(p);
+  int resul(string b, int a){
+    write(b);
     return 2+2;
   }
     void Main ()
     {
       int p;
+      x=1000;
+      y=100;
+      x=20;
       p=10;
-      x=100;
-      x=200;
-      y=1000000;
-      {
-      int k;
-      k=10;
-      }
-      k=10;
-
-      write(y);
-      //x=resul(1)+100;
-      write(x);
+      write(x+100);
       write(p);
+      write(y);
+      {
+      {
+            x=x+1000;
+      p=p+10;
+      }
+      }
+      p=p+10;
+      write(p);
+      write(resul("1",1));
+      write(x);
     }
 }

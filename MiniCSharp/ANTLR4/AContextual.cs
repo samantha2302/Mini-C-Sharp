@@ -40,7 +40,11 @@ namespace MiniCSharp.ANTLR4
         //InstanceToken verificara un indentificador de tipo inst antes de modificar su instanceToken si ya posee
         //uno, en caso contrario, se modificara y almacenara.
         public TablaSimbolos.Ident instanceToken;
-        
+
+        public int decSumBlock;
+
+        public int totalSumBlock;
+
         public AContextual(){
             this.laTabla = new TablaSimbolos();
             this.errorMsgs = new ArrayList<String>();
@@ -382,7 +386,7 @@ namespace MiniCSharp.ANTLR4
                 IToken id = context.IDENTIFIER(0).Symbol;
                 int idType = (int) Visit(context.type(0));
                 TablaSimbolos.Ident i = laTabla.buscar(context.IDENTIFIER(0).GetText());
-                if (i == null || i != null && laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) == -1)
+                if (i == null || laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) == -1 && laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), 0) == -1)
                 {
                     laTabla.insertar(id, idType, -1,false, false, true, null);
                 }else{
@@ -1044,7 +1048,10 @@ namespace MiniCSharp.ANTLR4
         // Realiza visita a expr y puede tener un numero o no
         public override object VisitWriteStatementAST(MiniCSharpParser.WriteStatementASTContext context)
         {
+            int resul = designatorAssign;
+            designatorAssign = -1;
             Visit(context.expr());
+            designatorAssign= resul;
             return null;
         }
 
@@ -1052,7 +1059,19 @@ namespace MiniCSharp.ANTLR4
         // Realiza visita a block 
         public override object VisitBlockStatementAST(MiniCSharpParser.BlockStatementASTContext context)
         {
+            decSumBlock++;
+            totalSumBlock++;
             Visit(context.block());
+            decSumBlock--;
+
+            if (decSumBlock == 0)
+            {
+                for (int i = 0; totalSumBlock > i; i++)
+                {
+                    laTabla.DecrementarNivel();
+                }
+            }
+            
             return null;
         }
 
