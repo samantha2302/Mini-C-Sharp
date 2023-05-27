@@ -29,13 +29,18 @@ namespace MiniCSharp.ANTLR4
         private MethodBuilder pointMainBldr, currentMethodBldr;
 
         private List<MethodBuilder> metodosGlobales; 
+        
+        private List<FieldBuilder> variablesGlobales; 
 
         private bool isArgument = false;
+        
+        private int nivelActual = -1;
         
         public CodeGen(string txt)
         {
             metodosGlobales = new List<MethodBuilder>();
-            
+            variablesGlobales = new List<FieldBuilder>();
+
             myAsmName.Name = txt;
             myAsmBldr = currentDom.DefineDynamicAssembly(myAsmName, AssemblyBuilderAccess.RunAndSave);
             myModuleBldr = myAsmBldr.DefineDynamicModule(asmFileName);
@@ -224,6 +229,8 @@ namespace MiniCSharp.ANTLR4
                 Visit(context.@using(a));
             }
 
+            nivelActual++;
+
             for (int i = 0; context.varDecl().Count() > i; i++)
             {
                 Visit(context.varDecl(i));
@@ -231,11 +238,13 @@ namespace MiniCSharp.ANTLR4
             
             for (int i = 0; context.classDecl().Count() > i; i++)
             {
+                nivelActual++;
                 Visit(context.classDecl(i));
             }
             
             for (int i = 0; context.methodDecl().Count() > i; i++)
             {
+                nivelActual++;
                 Visit(context.methodDecl(i));
             }
             
@@ -252,17 +261,37 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitVarDeclAST(MiniCSharpParser.VarDeclASTContext context)
         {
-            ILGenerator currentIL = currentMethodBldr.GetILGenerator();
 
             //Visit(context.type());
             
             //currentIL.DeclareLocal(verificarTipoRetorno((string) Visit(context.type())));
             //currentIL.DeclareLocal((Type)Visit(context.type()));
-            for (int i = 0; context.IDENTIFIER().Count() > i; i++)
+
+            if (nivelActual == 0)
             {
-                currentIL.DeclareLocal(verificarTipoRetorno((string) Visit(context.type())));
+                //ILGenerator currentIL = pointMainBldr.GetILGenerator();
+                for (int i = 0; context.IDENTIFIER().Count() > i; i++)
+                {
+                    string variableName = context.IDENTIFIER(i).GetText();
+                    Type variableType = verificarTipoRetorno((string)Visit(context.type()));
+
+                    FieldBuilder fieldBuilder = myTypeBldr.DefineField(variableName, variableType, FieldAttributes.Public | FieldAttributes.Static);
+                    variablesGlobales.Add(fieldBuilder);
+                    //fieldBuilder.SetValue(null, null); // Asignar un valor nulo a la variable global
+                }
+
             }
-            
+
+            if (nivelActual != 0)
+            {
+                ILGenerator currentIL = currentMethodBldr.GetILGenerator();
+                for (int i = 0; context.IDENTIFIER().Count() > i; i++)
+                {
+                    currentIL.DeclareLocal(verificarTipoRetorno((string) Visit(context.type())));
+                }
+                
+            }
+
             return null;
         }
 
@@ -525,6 +554,7 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitBlockAST(MiniCSharpParser.BlockASTContext context)
         {
+            nivelActual++;
             for (int i = 0; context.varDecl().Count() > i; i++)
             {
                 Visit(context.varDecl(i));

@@ -3,17 +3,24 @@ using otraClase1;
 
 class prueba
 {
+      int x,y;
   int resul(int k){
+  int p;
     p=1000;
-    write(p);
+    //write(p);
     return 2+2;
   }
     void Main ()
     {
-      int x;
+      int p;
+      int x,y;
+      p=10;
       x=100;
       x=200;
-      x=resul();
+      y=1000000;
+      write(y);
+      //x=resul(1)+100;
       write(x);
+      write(p);
     }
 }

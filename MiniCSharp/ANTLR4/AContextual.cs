@@ -218,8 +218,9 @@ namespace MiniCSharp.ANTLR4
                     return null;
                 }
 
-                if (i == null || i != null && laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) == -1)
+                if (i == null && laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) == -1)
                 {
+                    MessageBox.Show(context.IDENTIFIER(0).GetText());
                     int verificar = -1;
                     if (laTabla.buscarNivelMetodo() != -1)
                     {
@@ -1922,7 +1923,7 @@ namespace MiniCSharp.ANTLR4
                     }
 
                     result = i.GetType();
-                }else if (context.DOT() == null && context.LBRACK() == null && context.RBRACK() == null && 
+                }else if (context.DOT(0) == null && context.LBRACK(0) == null && context.RBRACK(0) == null && 
                           laTabla.buscarNivelMetodo() != -1)
                 {
                     int verificarNivel =-1;
