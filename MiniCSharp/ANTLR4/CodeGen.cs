@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading;
 using System.Windows.Forms;
+using Antlr4.Runtime.Misc;
 using generated;
 using Label = System.Reflection.Emit.Label;
 
@@ -365,10 +366,11 @@ namespace MiniCSharp.ANTLR4
             Visit(context.block());
 
             ILGenerator currentIL = currentMethodBldr.GetILGenerator();
-            currentIL.Emit(OpCodes.Ret); 
-            
+            currentIL.Emit(OpCodes.Ret);
+
             //Se agrega el método recién creado a la lista de mpetodos globales para no perder su referencia cuando se creen más métodos
             metodosGlobales.Add(currentMethodBldr);
+
             if (context.IDENTIFIER().GetText().Equals("Main")) {
                 //el puntero al metodo principal se setea cuando es el Main quien se declara
                 pointMainBldr = currentMethodBldr;
@@ -385,14 +387,28 @@ namespace MiniCSharp.ANTLR4
             //se construye el arreglo de tipos necesario para enviarle a la definición de métodos
             Type[] result = new Type[context.type().Length];
             //POSIBLE ERROR POR TEXTO
+            
+            //currentIL.DeclareLocal(verificarTipoRetorno((string) Visit(context.type())));
+            //declararVariableLocal(context.IDENTIFIER(i).GetText(),currentIL.DeclareLocal(verificarTipoRetorno((string) Visit(context.type()))));
 
             for (int i = 0; context.type().Count() > i; i++)
             {
-                result[i] = verificarTipoRetorno((string)Visit(context.type(i)));
-                currentIL.Emit(OpCodes.Ldarg, i);
-                currentIL.DeclareLocal(result[i]);
-                currentIL.Emit(OpCodes.Stloc, i); //TODO se debería llevar una lista de argumentos para saber cual es cual cuando se deban llamar
+                //result[i] = verificarTipoRetorno((string)Visit(context.type(i)));
+                //currentIL.Emit(OpCodes.Ldarg, i);
+                //currentIL.DeclareLocal(result[i]);
+                //currentIL.Emit(OpCodes.Stloc, i); //TODO se debería llevar una lista de argumentos para saber cual es cual cuando se deban llamar
                 //currentIL.Emit(OpCodes.Ldloc, 0);//solo para la prueba, el 0 es el que se va a llamar
+                
+                
+                result[i] = verificarTipoRetorno((string)Visit(context.type(i)));
+                //currentIL.DeclareLocal(result[i]);
+                declararVariableLocal(context.IDENTIFIER(i).GetText(),currentIL.DeclareLocal(result[i]));
+                currentIL.Emit(OpCodes.Ldarg, i);
+                currentIL.Emit(OpCodes.Stloc, i);
+                //currentIL.Emit(OpCodes.Ldloc, 0);
+
+                //currentIL.DeclareLocal(verificarTipoRetorno((string) Visit(context.type())));
+                //declararVariableLocal(context.IDENTIFIER(i).GetText(),currentIL.DeclareLocal(verificarTipoRetorno((string) Visit(context.type()))));
             }
             
             isArgument = false;
@@ -467,16 +483,42 @@ namespace MiniCSharp.ANTLR4
                     {
                         Visit(context.actPars());
                     }
+                    //currentIL.Emit(OpCodes.Ldarg, 2);
+                    //currentIL.Emit(OpCodes.Stloc, 2);
                     //se busca el método en la lista de métodos globales para referenciarlo
                     currentIL.Emit(OpCodes.Call, buscarMetodo(context.designator().GetText()));
                     currentIL.Emit(OpCodes.Pop);
                 }
             }else if (context.INCREMENT() != null)
             {
-                /////
+                ILGenerator currentIL = currentMethodBldr.GetILGenerator();
+                Visit(context.designator());
+                currentIL.Emit(OpCodes.Ldc_I4 , Int32.Parse("1"));
+                currentIL.Emit(OpCodes.Add);
+                if (buscarVariableGlobal(context.designator().GetText()) != null)
+                {
+                    currentIL.Emit(OpCodes.Stsfld,buscarVariableGlobal(context.designator().GetText())); //TODO: e debe utilizar el índice que corresponde a la variable y no 0 siempre
+                }
+                else
+                {
+                    currentIL.Emit(OpCodes.Stloc,variablesLocales[context.designator().GetText()]);
+                }
+                
+                
             }else if (context.DECREMENT() != null)
             {
-                /////
+                ILGenerator currentIL = currentMethodBldr.GetILGenerator();
+                Visit(context.designator());
+                currentIL.Emit(OpCodes.Ldc_I4 , Int32.Parse("1"));
+                currentIL.Emit(OpCodes.Sub);
+                if (buscarVariableGlobal(context.designator().GetText()) != null)
+                {
+                    currentIL.Emit(OpCodes.Stsfld,buscarVariableGlobal(context.designator().GetText())); //TODO: e debe utilizar el índice que corresponde a la variable y no 0 siempre
+                }
+                else
+                {
+                    currentIL.Emit(OpCodes.Stloc,variablesLocales[context.designator().GetText()]);
+                }
             }
 
             return null;
