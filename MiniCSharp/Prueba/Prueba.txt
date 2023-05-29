@@ -4,13 +4,14 @@ using otraClase1;
 class prueba
 {
       int x,y;
-  int resul(string b, int a,int p){
-    
-    return a;
+  int resul(double b, int a,int p){
+    write(b);
+    return 1;
   }
     void Main ()
     {
       int p;
+      double z;
       x=10;
       y=10;
       p++;
@@ -19,7 +20,11 @@ class prueba
       p--;
       p--;
       x--;
-      write(x);
-      write(p);
+      //write(x);
+      //write(p);
+      z=1;
+      write(z);
+      resul(z,1,1);
+      write(resul(z,1,1)+1);
     }
 }
