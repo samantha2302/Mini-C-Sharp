@@ -47,6 +47,14 @@ namespace MiniCSharp.ANTLR4
         private Dictionary<string, LocalBuilder> variablesLocales;
         
         List<List<Type>> tiposMetodos = new List<List<Type>>();
+
+        private Type tipoDesignator;
+        
+        private Type tipoMethod;
+        
+        private int indiceMethod;
+        
+        private bool entradaMethod = false;
         
         public CodeGen(string txt)
         {
@@ -107,7 +115,7 @@ namespace MiniCSharp.ANTLR4
             return null;
         }
         
-        private int buscarMetodoPrueba(String name)
+        private int buscarMetodoIndice(String name)
         {
             int i = 0;
             foreach (var method in metodosGlobales)
@@ -387,6 +395,7 @@ namespace MiniCSharp.ANTLR4
             currentMethodBldr.SetParameters(parameters);
 
             nivelActual--;
+            tipoMethod = tipoMetodo;
             Visit(context.block());
 
             ILGenerator currentIL = currentMethodBldr.GetILGenerator();
@@ -485,7 +494,22 @@ namespace MiniCSharp.ANTLR4
 
             if (context.ASSIGN() != null)
             {
+                if (buscarVariableGlobal(context.designator().GetText()) != null)
+                {
+                    if (buscarVariableGlobal(context.designator().GetText()).FieldType == typeof(double))
+                    {
+                        tipoDesignator = typeof(double);
+                    }
+                }
+                else
+                {
+                    if (variablesLocales[context.designator().GetText()].LocalType == typeof(double))
+                    {
+                        tipoDesignator = typeof(double);
+                    }
+                }
                 Visit(context.expr());
+                tipoDesignator = null;
                 //se asigna el valor a la variable
                 //TODO hay que discriminar si es local o global porque la instrucción a generar es distinta según el caso
                 ILGenerator currentIL = currentMethodBldr.GetILGenerator();
@@ -496,12 +520,14 @@ namespace MiniCSharp.ANTLR4
                 else
                 {
                     currentIL.Emit(OpCodes.Stloc,variablesLocales[context.designator().GetText()]);
+                    //MessageBox.Show(variablesLocales[context.designator().GetText()].LocalType.Name);
                 }
             }else if (context.LPAREN() != null)
             {
                 ILGenerator currentIL = currentMethodBldr.GetILGenerator();
                 if(!context.designator().GetText().Equals("Main"))
                 {
+                    indiceMethod = buscarMetodoIndice(context.designator().GetText());
                     //MessageBox.Show(buscarMetodo("resul").ToString());
                     // se debe visitar a los parámetros reales para generar el código que corresponda
                     if (context.actPars() != null)
@@ -614,7 +640,12 @@ namespace MiniCSharp.ANTLR4
             ///PENSAR
             if (context.expr() != null)
             {
+                if (tipoMethod == typeof(double))
+                {
+                    tipoDesignator = typeof(double);
+                }
                 Visit(context.expr());
+                tipoDesignator = null;
             }
             return null;
         }
@@ -650,6 +681,8 @@ namespace MiniCSharp.ANTLR4
             {
                 currentIL.EmitCall(OpCodes.Call, writeBool/*OJO... EL QUE CORRESPONDA SEGUN TIPO*/, null); 
             }
+
+            entradaMethod = false;
             
             //Visit(context.expr());
             
@@ -700,9 +733,15 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitActParsAST(MiniCSharpParser.ActParsASTContext context)
         {
+            //MessageBox.Show(tiposMetodos[0].Count().ToString());
             for (int i = 0; context.expr().Count() > i; i++)
             {
+                if (tiposMetodos[indiceMethod][i]== typeof(double))
+                {
+                    tipoDesignator = typeof(double);
+                }
                 Visit(context.expr(i));
+                tipoDesignator = null;
             }
             isArgument = false;
             return null;
@@ -798,8 +837,7 @@ namespace MiniCSharp.ANTLR4
                 ILGenerator currentIL = currentMethodBldr.GetILGenerator();
                 if(!context.designator().GetText().Equals("Main"))
                 {
-                    //MessageBox.Show(buscarMetodo("resul").ToString());
-                    // se debe visitar a los parámetros reales para generar el código que corresponda
+                    indiceMethod = buscarMetodoIndice(context.designator().GetText());
                     if (context.actPars() != null)
                     {
                         Visit(context.actPars());
@@ -808,14 +846,21 @@ namespace MiniCSharp.ANTLR4
                     currentIL.Emit(OpCodes.Call, buscarMetodo(context.designator().GetText()));
                     //currentIL.Emit(OpCodes.Pop);
                     //currentIL.Emit(OpCodes.Stloc, 0); //TODO se debería llevar una lista de argumentos para saber cual es cual cuando se deban llamar
-                    foreach (List<Type> subList in tiposMetodos)
+                    if (buscarMetodo(context.designator().GetText()).ReturnType== typeof(double) && entradaMethod.Equals(false))
                     {
-                        foreach (Type item in subList)
-                        {
-                            MessageBox.Show(item.ToString());
-                        }
+                        //tipoDesignator = typeof(double);
+                        entradaMethod=true;
+                       
                     }
                     tipo = buscarMetodo(context.designator().GetText()).ReturnType;
+                    
+                    if (entradaMethod.Equals(true))
+                    {
+                        tipoDesignator = typeof(double);
+                        currentIL.Emit(OpCodes.Conv_R8);
+                        //currentIL.Emit(OpCodes.Ldc_I4 , Int32.Parse("1"));
+                        tipo = typeof(double);
+                    }
                 }
             }
             return tipo;
@@ -825,15 +870,35 @@ namespace MiniCSharp.ANTLR4
         {
             Type tipo = null;
             ILGenerator currentIL = currentMethodBldr.GetILGenerator();
-            try
+
+            if (tipoDesignator == typeof(double))
             {
-                currentIL.Emit(OpCodes.Ldc_I4 , Int32.Parse(context.NUMBER().GetText()));
+                try
+                {
+                    string doubleText = context.NUMBER().GetText() +".0";
+                    doubleText= doubleText.Replace(".", ",");
+                    double OutVal;
+                    double.TryParse(doubleText, out OutVal);
+                    currentIL.Emit(OpCodes.Ldc_R8 , OutVal);
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine($"Unable to parse the number expression!!!");
+                }
+                tipo= typeof(double);
             }
-            catch (FormatException)
+            else
             {
-                Console.WriteLine($"Unable to parse the number expression!!!");
+                try
+                {
+                    currentIL.Emit(OpCodes.Ldc_I4 , Int32.Parse(context.NUMBER().GetText()));
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine($"Unable to parse the number expression!!!");
+                }
+                tipo= typeof(int);
             }
-            tipo= typeof(int);
             return tipo;
         }
 

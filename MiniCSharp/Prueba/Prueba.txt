@@ -4,10 +4,18 @@ using otraClase1;
 class prueba
 {
       int x,y;
-  int resul(double b, int a,int p){
-    write(b);
+  double resul(double z, int a,int p){
+    z=z+1;
+    write(z);
     return 1;
   }
+  
+    int result(double z, int a,int p){
+      z=z+1;
+      write(z);
+      return 1;
+    }
+  
     void Main ()
     {
       int p;
@@ -22,9 +30,9 @@ class prueba
       x--;
       //write(x);
       //write(p);
-      z=1;
+      z=1+1+2+2.02+3;
       write(z);
       resul(z,1,1);
-      write(resul(z,1,1)+1);
+      write(resul(1,1,1)+1.0+9.25+ result(1,1,1)+1+result(1,1,1)*10);
     }
 }
