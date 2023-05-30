@@ -15,11 +15,20 @@ class prueba
       write(z);
       return 1;
     }
+    
+        double? pruebat(double z){
+          z=z+1;
+          write(z);
+          return 1;
+        }
   
     void Main ()
     {
       int p;
       double z;
+      double? dxd;
+      dxd=null;
+      write(dxd);
       x=10;
       y=10;
       p++;

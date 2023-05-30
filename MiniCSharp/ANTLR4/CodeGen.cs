@@ -26,7 +26,8 @@ namespace MiniCSharp.ANTLR4
         private TypeBuilder myTypeBldr;
         private ConstructorInfo objCtor=null;
 
-        private MethodInfo writeInt, writeDouble, writeChar, writeString, writeBool;
+        private MethodInfo writeInt, writeDouble, writeChar, writeString, writeBool, 
+            writeIntNull, writeDoubleNull, writeCharNull, writeBoolNull, Null;
 
         private MethodBuilder pointMainBldr, currentMethodBldr;
 
@@ -55,6 +56,8 @@ namespace MiniCSharp.ANTLR4
         private int indiceMethod;
         
         private bool entradaMethod = false;
+        
+        private bool entradaMethodNull = false;
         
         public CodeGen(string txt)
         {
@@ -97,6 +100,23 @@ namespace MiniCSharp.ANTLR4
             writeBool= typeof(Console).GetMethod(
                 "WriteLine",
                 new Type[] { typeof(bool) });
+            
+            writeIntNull = typeof(Console).GetMethod(
+                "WriteLine",
+                new Type[] { typeof(int?) });
+            writeDoubleNull = typeof(Console).GetMethod(
+                "WriteLine",
+                new Type[] { typeof(double?) });
+            writeCharNull = typeof(Console).GetMethod(
+                "WriteLine",
+                new Type[] { typeof(char?) });
+            writeBoolNull= typeof(Console).GetMethod(
+                "WriteLine",
+                new Type[] { typeof(bool?) });
+            
+            Null= typeof(RuntimeTypeHandle).GetMethod(
+                "System.Nullable",
+                new Type[] { typeof(int?) });
         }
         
         public void declararVariableLocal(string nombreVariable, LocalBuilder localBuilder)
@@ -147,7 +167,7 @@ namespace MiniCSharp.ANTLR4
             }
             if (tipo.Equals("int?"))
             {
-                return typeof(int?);
+                return typeof(int);
             }
             if (tipo.Equals("double"))
             {
@@ -155,7 +175,7 @@ namespace MiniCSharp.ANTLR4
             }
             if (tipo.Equals("double?"))
             {
-                return typeof(double?);
+                return typeof(double);
             }
             if (tipo.Equals("char"))
             {
@@ -163,7 +183,7 @@ namespace MiniCSharp.ANTLR4
             }
             if (tipo.Equals("char?"))
             {
-                return typeof(char?);
+                return typeof(char);
             }
             if (tipo.Equals("string"))
             {
@@ -179,7 +199,7 @@ namespace MiniCSharp.ANTLR4
             }
             if (tipo.Equals("bool?"))
             {
-                return typeof(bool?);
+                return typeof(bool);
             }
             if (tipo.Equals("inst"))
             {
@@ -196,7 +216,7 @@ namespace MiniCSharp.ANTLR4
             }
             if (tipo.Equals("List<int?>"))
             {
-                return typeof(List<int?>);
+                return typeof(List<int>);
             }
             if (tipo.Equals("List<double>"))
             {
@@ -204,7 +224,7 @@ namespace MiniCSharp.ANTLR4
             }
             if (tipo.Equals("List<double?>"))
             {
-                return typeof(List<double?>);
+                return typeof(List<double>);
             }
             if (tipo.Equals("List<char>"))
             {
@@ -212,7 +232,7 @@ namespace MiniCSharp.ANTLR4
             }
             if (tipo.Equals("List<char?>"))
             {
-                return typeof(List<char?>);
+                return typeof(List<char>);
             }
             if (tipo.Equals("List<string>"))
             {
@@ -228,7 +248,7 @@ namespace MiniCSharp.ANTLR4
             }
             if (tipo.Equals("List<bool?>"))
             {
-                return typeof(List<bool?>);
+                return typeof(List<bool>);
             }
             
             
@@ -239,7 +259,7 @@ namespace MiniCSharp.ANTLR4
             }
             if (tipo.Equals("int?[]"))
             {
-                return typeof(int?[]);
+                return typeof(int[]);
             }
             if (tipo.Equals("double[]"))
             {
@@ -247,7 +267,7 @@ namespace MiniCSharp.ANTLR4
             }
             if (tipo.Equals("double?[]"))
             {
-                return typeof(double?[]);
+                return typeof(double[]);
             }
             if (tipo.Equals("char[]"))
             {
@@ -255,7 +275,7 @@ namespace MiniCSharp.ANTLR4
             }
             if (tipo.Equals("char?[]"))
             {
-                return typeof(char?[]);
+                return typeof(char[]);
             }
             if (tipo.Equals("string[]"))
             {
@@ -271,7 +291,7 @@ namespace MiniCSharp.ANTLR4
             }
             if (tipo.Equals("bool?[]"))
             {
-                return typeof(bool?[]);
+                return typeof(bool[]);
             }
             else
             {
@@ -499,6 +519,9 @@ namespace MiniCSharp.ANTLR4
                     if (buscarVariableGlobal(context.designator().GetText()).FieldType == typeof(double))
                     {
                         tipoDesignator = typeof(double);
+                    } else if (buscarVariableGlobal(context.designator().GetText()).FieldType == typeof(double?))
+                    {
+                        tipoDesignator = typeof(double?);
                     }
                 }
                 else
@@ -506,10 +529,15 @@ namespace MiniCSharp.ANTLR4
                     if (variablesLocales[context.designator().GetText()].LocalType == typeof(double))
                     {
                         tipoDesignator = typeof(double);
+                    } else if (variablesLocales[context.designator().GetText()].LocalType == typeof(double?))
+                    {
+                        tipoDesignator = typeof(double?);
                     }
                 }
                 Visit(context.expr());
                 tipoDesignator = null;
+                entradaMethod = false;
+                entradaMethodNull = false;
                 //se asigna el valor a la variable
                 //TODO hay que discriminar si es local o global porque la instrucción a generar es distinta según el caso
                 ILGenerator currentIL = currentMethodBldr.GetILGenerator();
@@ -643,6 +671,9 @@ namespace MiniCSharp.ANTLR4
                 if (tipoMethod == typeof(double))
                 {
                     tipoDesignator = typeof(double);
+                }else if (tipoMethod == typeof(double?))
+                {
+                    tipoDesignator = typeof(double?);
                 }
                 Visit(context.expr());
                 tipoDesignator = null;
@@ -680,9 +711,23 @@ namespace MiniCSharp.ANTLR4
             }else if (tipo == typeof(bool))
             {
                 currentIL.EmitCall(OpCodes.Call, writeBool/*OJO... EL QUE CORRESPONDA SEGUN TIPO*/, null); 
+            }else if (tipo == typeof(int?))
+            {
+                //TODO: debe conocerse el tipo de la expresión para saber a cual write llamar
+                currentIL.EmitCall(OpCodes.Call, writeIntNull/*OJO... EL QUE CORRESPONDA SEGUN TIPO*/, null); 
+            }else if (tipo == typeof(double?))
+            {
+                currentIL.EmitCall(OpCodes.Call, writeDoubleNull/*OJO... EL QUE CORRESPONDA SEGUN TIPO*/, null); 
+            }else if (tipo == typeof(char?))
+            {
+                currentIL.EmitCall(OpCodes.Call, writeCharNull/*OJO... EL QUE CORRESPONDA SEGUN TIPO*/, null);
+            }else if (tipo == typeof(bool?))
+            {
+                currentIL.EmitCall(OpCodes.Call, writeBoolNull /*OJO... EL QUE CORRESPONDA SEGUN TIPO*/, null);
             }
 
             entradaMethod = false;
+            entradaMethodNull = false;
             
             //Visit(context.expr());
             
@@ -739,6 +784,9 @@ namespace MiniCSharp.ANTLR4
                 if (tiposMetodos[indiceMethod][i]== typeof(double))
                 {
                     tipoDesignator = typeof(double);
+                }else if (tiposMetodos[indiceMethod][i]== typeof(double?))
+                {
+                    tipoDesignator = typeof(double?);
                 }
                 Visit(context.expr(i));
                 tipoDesignator = null;
@@ -852,6 +900,14 @@ namespace MiniCSharp.ANTLR4
                         entradaMethod=true;
                        
                     }
+                    
+                    if (buscarMetodo(context.designator().GetText()).ReturnType== typeof(double?) && entradaMethodNull.Equals(false))
+                    {
+                        //tipoDesignator = typeof(double);
+                        entradaMethodNull=true;
+                       
+                    }
+                    
                     tipo = buscarMetodo(context.designator().GetText()).ReturnType;
                     
                     if (entradaMethod.Equals(true))
@@ -861,6 +917,15 @@ namespace MiniCSharp.ANTLR4
                         //currentIL.Emit(OpCodes.Ldc_I4 , Int32.Parse("1"));
                         tipo = typeof(double);
                     }
+                    
+                    if (entradaMethodNull.Equals(true))
+                    {
+                        tipoDesignator = typeof(double?);
+                        currentIL.Emit(OpCodes.Conv_R8);
+                        //currentIL.Emit(OpCodes.Ldc_I4 , Int32.Parse("1"));
+                        tipo = typeof(double?);
+                    }
+                    
                 }
             }
             return tipo;
@@ -886,6 +951,21 @@ namespace MiniCSharp.ANTLR4
                     Console.WriteLine($"Unable to parse the number expression!!!");
                 }
                 tipo= typeof(double);
+            }else if (tipoDesignator == typeof(double?))
+            {
+                try
+                {
+                    string doubleText = context.NUMBER().GetText() +".0";
+                    doubleText= doubleText.Replace(".", ",");
+                    double OutVal;
+                    double.TryParse(doubleText, out OutVal);
+                    currentIL.Emit(OpCodes.Ldc_R8 , OutVal);
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine($"Unable to parse the number expression!!!");
+                }
+                tipo= typeof(double?);
             }
             else
             {
@@ -1013,7 +1093,11 @@ namespace MiniCSharp.ANTLR4
             Type tipo = null;
             if (context.DOT(0) == null && context.LBRACK(0) == null)
             {
-                if (buscarVariableGlobal(context.IDENTIFIER(0).GetText()) != null)
+                if (context.IDENTIFIER(0).GetText().Equals("null"))
+                {
+                    ILGenerator currentIL = currentMethodBldr.GetILGenerator();
+                    currentIL.Emit(OpCodes.Ldnull);
+                }else if (buscarVariableGlobal(context.IDENTIFIER(0).GetText()) != null)
                 {
                     //MessageBox.Show(buscarVariableGlobal(context.IDENTIFIER(0).GetText()).FieldType.ToString());
                     ILGenerator currentIL = currentMethodBldr.GetILGenerator();
