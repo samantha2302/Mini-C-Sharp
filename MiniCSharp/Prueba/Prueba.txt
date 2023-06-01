@@ -17,31 +17,22 @@ class prueba
     }
     
         double? pruebat(double z){
+        if(z ==1){return 2;}
           z=z+1;
           write(z);
           return 1;
         }
+        
+    class miclase {
+        int pos;
+        int neg;
+    }
   
     void Main ()
     {
       int p;
       double z;
       double? dxd;
-      dxd=null;
-      write(dxd);
-      x=10;
-      y=10;
-      p++;
-      x++;
-      //x=x+y+100;
-      p--;
-      p--;
-      x--;
-      //write(x);
-      //write(p);
-      z=1+1+2+2.02+3;
-      write(z);
-      resul(z,1,1);
-      write(resul(1,1,1)+1.0+9.25+ result(1,1,1)+1+result(1,1,1)*10);
+      inst kl;
     }
 }
