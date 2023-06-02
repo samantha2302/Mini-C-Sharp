@@ -27,8 +27,15 @@ class prueba
       write(z);
       inst jk;
       jk=new miclase;
+      jk.neg++;
+      jk.neg++;
+      jk.neg++;
       return jk.neg;
     }
+    
+        class miclasedos {
+            int per;
+        }
             
   
     void Main ()
@@ -39,11 +46,14 @@ class prueba
       inst kl;
       inst xd;
       kl=new miclase;
-      xd= new miclase;
+      xd= new miclasedos;
       
-      kl.neg++;
-      xd.neg++;
+      kl.neg=1000;
+      kl.neg=kl.neg+1000;
+      //kl.neg++;
+      write(xd.per);
       write(kl.neg);
-      write(xd.neg);
+      write(pruebat(kl.neg+100));
+      //write(1+resul(1.25, 2,3)+result(1, 1,1)+1);
     }
 }
