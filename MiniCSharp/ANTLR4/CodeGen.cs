@@ -63,8 +63,7 @@ namespace MiniCSharp.ANTLR4
 
         private List<MethodBuilder> metodosGlobales; 
         
-        private List<FieldBuilder> variablesGlobales; 
-        private List<FieldBuilder> variablesClase; 
+        private List<FieldBuilder> variablesGlobales;
 
         private bool isArgument = false;
         
@@ -102,7 +101,6 @@ namespace MiniCSharp.ANTLR4
             metodosGlobales = new List<MethodBuilder>();
             variablesGlobales = new List<FieldBuilder>();
             clasesGlobales = new List<Type>();
-            variablesClase= new List<FieldBuilder>();
             listaInstancia= new List<Instancia>();
             
             myAsmName.Name = txt;
@@ -157,20 +155,7 @@ namespace MiniCSharp.ANTLR4
 
             return null;
         }
-        
-        private int buscarMetodoIndice(String name)
-        {
-            int i = 0;
-            foreach (var method in metodosGlobales)
-            {
-                if (method.Name.Equals(name))
-                    return i;
-                i++;
-            }
 
-            return -1;
-        }
-        
         private FieldBuilder buscarVariableGlobal(String name)
         {
             foreach (var global in variablesGlobales)
@@ -192,18 +177,7 @@ namespace MiniCSharp.ANTLR4
 
             return null;
         }
-        
-        private FieldBuilder buscarVariableClase(String name)
-        {
-            foreach (var classN in variablesClase)
-            {
-                if (classN.Name.Equals(name))
-                    return classN;
-            }
 
-            return null;
-        }
-        
         public int buscarIndiceListaInstancia (string variable, int nivel)
         {
             for (int i = 0; i < listaInstancia.Count(); i++) 
@@ -260,13 +234,12 @@ namespace MiniCSharp.ANTLR4
             }
             if (tipo.Equals("inst"))
             {
-                return typeof(object);/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                return typeof(object);
             }if (tipo.Equals("void"))
             {
                 return typeof(void);
             }
-            
-            
+
             if (tipo.Equals("List<int>"))
             {
                 return typeof(List<int>);
@@ -396,11 +369,6 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitVarDeclAST(MiniCSharpParser.VarDeclASTContext context)
         {
-
-            //Visit(context.type());
-            
-            //currentIL.DeclareLocal(verificarTipoRetorno((string) Visit(context.type())));
-            //currentIL.DeclareLocal((Type)Visit(context.type()));
             if (inClass.Equals(true))
             {
                 for (int i = 0; i < context.IDENTIFIER().Length; i++)
@@ -409,26 +377,18 @@ namespace MiniCSharp.ANTLR4
                     Type variableType = verificarTipoRetorno((string)Visit(context.type()));
 
                     FieldBuilder fieldBuilder = classBuilder.DefineField(variableName, variableType, FieldAttributes.Public);
-
-                    // Puedes realizar otras acciones con el fieldBuilder según sea necesario
-
-                    variablesClase.Add(fieldBuilder);
                 }
             }
             
             else if (nivelActual == 0)
             {
-                //ILGenerator currentIL = pointMainBldr.GetILGenerator();
                 for (int i = 0; context.IDENTIFIER().Count() > i; i++)
                 {
                     string variableName = context.IDENTIFIER(i).GetText();
                     Type variableType = verificarTipoRetorno((string)Visit(context.type()));
 
-                   // FieldBuilder fieldBuilder = myTypeBldr.DefineField(variableName, variableType, FieldAttributes.Public | FieldAttributes.Static);
-
-                   currentFieldBldr = myTypeBldr.DefineField(variableName, variableType, FieldAttributes.Public | FieldAttributes.Static);
-                   variablesGlobales.Add(currentFieldBldr);
-                    //fieldBuilder.SetValue(null, null); // Asignar un valor nulo a la variable global
+                    currentFieldBldr = myTypeBldr.DefineField(variableName, variableType, FieldAttributes.Public | FieldAttributes.Static);
+                    variablesGlobales.Add(currentFieldBldr);
                 }
 
             }
@@ -438,7 +398,6 @@ namespace MiniCSharp.ANTLR4
                 ILGenerator currentIL = currentMethodBldr.GetILGenerator();
                 for (int i = 0; context.IDENTIFIER().Count() > i; i++)
                 {
-                    //currentIL.DeclareLocal(verificarTipoRetorno((string) Visit(context.type())));
                     declararVariableLocal(context.IDENTIFIER(i).GetText(),currentIL.DeclareLocal(verificarTipoRetorno((string) Visit(context.type()))));
                 }
                 
@@ -457,7 +416,6 @@ namespace MiniCSharp.ANTLR4
             }
             Type generatedType = classBuilder.CreateType();
             clasesGlobales.Add(generatedType);
-            //MessageBox.Show(buscarClase(context.IDENTIFIER().GetText()).GetField("pos").FieldType.ToString());
             inClass = false;
             return null;
         }
@@ -472,23 +430,19 @@ namespace MiniCSharp.ANTLR4
             {
                 tipoMetodo = verificarTipoRetorno((string) Visit(context.type()));
             }
-
-            //se declara el método actual utilizando los datos optenidos en las visitas 
+            
             currentMethodBldr = myTypeBldr.DefineMethod(context.IDENTIFIER().GetText(),
                 MethodAttributes.Public |
                 MethodAttributes.Static,
                 tipoMetodo,
-                null);//los parámetros son null porque se tiene que visitar despues de declarar el método... se cambiará luego
-
-            //se visitan los parámetros para definir el arreglo de tipos de cada uno de los parámetros formales... si es que hay (not null)
+                null);
+            
             Type[] parameters = null;
             if (context.formPars() != null)
             {
                 parameters = (Type[]) Visit(context.formPars());
-                //Visit(context.formPars());
             }
-
-            //después de visitar los parámetros, se cambia el signatura que requiere la definición del método
+            
             currentMethodBldr.SetParameters(parameters);
 
             nivelActual--;
@@ -496,12 +450,10 @@ namespace MiniCSharp.ANTLR4
 
             ILGenerator currentIL = currentMethodBldr.GetILGenerator();
             currentIL.Emit(OpCodes.Ret);
-
-            //Se agrega el método recién creado a la lista de mpetodos globales para no perder su referencia cuando se creen más métodos
+            
             metodosGlobales.Add(currentMethodBldr);
             
             if (context.IDENTIFIER().GetText().Equals("Main")) {
-                //el puntero al metodo principal se setea cuando es el Main quien se declara
                 pointMainBldr = currentMethodBldr;
             }
             
@@ -513,31 +465,17 @@ namespace MiniCSharp.ANTLR4
             ILGenerator currentIL = currentMethodBldr.GetILGenerator();
             isArgument = true;
             
-            //se construye el arreglo de tipos necesario para enviarle a la definición de métodos
             Type[] result = new Type[context.type().Length];
-            //POSIBLE ERROR POR TEXTO
             
-            //currentIL.DeclareLocal(verificarTipoRetorno((string) Visit(context.type())));
-            //declararVariableLocal(context.IDENTIFIER(i).GetText(),currentIL.DeclareLocal(verificarTipoRetorno((string) Visit(context.type()))));
             List<Type> parametros = new List<Type>();
             for (int i = 0; context.type().Count() > i; i++)
             {
-                //result[i] = verificarTipoRetorno((string)Visit(context.type(i)));
-                //currentIL.Emit(OpCodes.Ldarg, i);
-                //currentIL.DeclareLocal(result[i]);
-                //currentIL.Emit(OpCodes.Stloc, i); //TODO se debería llevar una lista de argumentos para saber cual es cual cuando se deban llamar
-                //currentIL.Emit(OpCodes.Ldloc, 0);//solo para la prueba, el 0 es el que se va a llamar
-                
                 result[i] = verificarTipoRetorno((string)Visit(context.type(i)));
                 parametros.Add(result[i]);
-                //currentIL.DeclareLocal(result[i]);
+
                 declararVariableLocal(context.IDENTIFIER(i).GetText(),currentIL.DeclareLocal(result[i]));
                 currentIL.Emit(OpCodes.Ldarg, i);
                 currentIL.Emit(OpCodes.Stloc, i);
-                //currentIL.Emit(OpCodes.Ldloc, 0);
-
-                //currentIL.DeclareLocal(verificarTipoRetorno((string) Visit(context.type())));
-                //declararVariableLocal(context.IDENTIFIER(i).GetText(),currentIL.DeclareLocal(verificarTipoRetorno((string) Visit(context.type()))));
             }
 
             isArgument = false;
@@ -546,37 +484,29 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitTypeAST(MiniCSharpParser.TypeASTContext context)
         {
-            //PENSAAARf
-
             if (context.QMARK(0) == null && context.LESS_THAN() == null && context.LBRACK() == null)
             {
                 return context.IDENTIFIER(0).GetText();
-                //return verificarTipoRetorno(context.IDENTIFIER(0).GetText());
             }
             if (context.QMARK(0) != null && context.LESS_THAN() == null && context.LBRACK() == null)
             {
                 return context.IDENTIFIER(0).GetText()+"?";
-                //return verificarTipoRetorno(context.IDENTIFIER(0).GetText()+"?");
             }
             if (context.QMARK(0) == null && context.LESS_THAN() != null && context.LBRACK() == null)
             {
                 return "List"+"<"+context.IDENTIFIER(0).GetText()+">";
-                //return verificarTipoRetorno("List"+"<"+context.IDENTIFIER(0).GetText()+">");
             }
             if (context.QMARK(0) != null && context.LESS_THAN() != null && context.LBRACK() == null)
             {
                 return "List"+"<"+context.IDENTIFIER(0).GetText()+"?"+">";
-                //return verificarTipoRetorno("List"+"<"+context.IDENTIFIER(0).GetText()+"?"+">");
             }
             if (context.QMARK(0) == null && context.LESS_THAN() == null && context.LBRACK() != null)
             {
                 return context.IDENTIFIER(0).GetText()+"[]";
-                //return verificarTipoRetorno(context.IDENTIFIER(0).GetText()+"[]");
             }
             if (context.QMARK(0) != null && context.LESS_THAN() == null && context.LBRACK() != null)
             {
                 return context.IDENTIFIER(0).GetText()+"?"+"[]";
-                //return verificarTipoRetorno(context.IDENTIFIER(0).GetText()+"?"+"[]");
             }
             
             return null;
@@ -584,8 +514,6 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitDesignatorStatementAST(MiniCSharpParser.DesignatorStatementASTContext context)
         {
-           // Visit(context.designator());
-
             if (context.ASSIGN() != null)
             {
 
@@ -601,12 +529,11 @@ namespace MiniCSharp.ANTLR4
                 ILGenerator currentIL = currentMethodBldr.GetILGenerator();
                 if (buscarVariableGlobal(context.designator().GetText()) != null)
                 {
-                    currentIL.Emit(OpCodes.Stsfld,buscarVariableGlobal(context.designator().GetText())); //TODO: e debe utilizar el índice que corresponde a la variable y no 0 siempre
+                    currentIL.Emit(OpCodes.Stsfld,buscarVariableGlobal(context.designator().GetText()));
                 }
                 else if(variablesLocales.ContainsKey(context.designator().GetText()))
                 {
                     currentIL.Emit(OpCodes.Stloc,variablesLocales[context.designator().GetText()]);
-                    //MessageBox.Show(variablesLocales[context.designator().GetText()].LocalType.Name);
                     if (inNewFactor.Equals(true))
                     {
                         listaInstancia.Add(new Instancia(context.designator().GetText(), nivelActual, className));
@@ -630,15 +557,10 @@ namespace MiniCSharp.ANTLR4
                 ILGenerator currentIL = currentMethodBldr.GetILGenerator();
                 if(!context.designator().GetText().Equals("Main"))
                 {
-                    //MessageBox.Show(buscarMetodo("resul").ToString());
-                    // se debe visitar a los parámetros reales para generar el código que corresponda
                     if (context.actPars() != null)
                     {
                         Visit(context.actPars());
                     }
-                    //currentIL.Emit(OpCodes.Ldarg, 2);
-                    //currentIL.Emit(OpCodes.Stloc, 2);
-                    //se busca el método en la lista de métodos globales para referenciarlo
                     currentIL.Emit(OpCodes.Call, buscarMetodo(context.designator().GetText()));
                     currentIL.Emit(OpCodes.Pop);
                 }
@@ -656,7 +578,7 @@ namespace MiniCSharp.ANTLR4
                 currentIL.Emit(OpCodes.Add);
                 if (buscarVariableGlobal(context.designator().GetText()) != null)
                 {
-                    currentIL.Emit(OpCodes.Stsfld,buscarVariableGlobal(context.designator().GetText())); //TODO: e debe utilizar el índice que corresponde a la variable y no 0 siempre
+                    currentIL.Emit(OpCodes.Stsfld,buscarVariableGlobal(context.designator().GetText()));
                 }
                 else if (variablesLocales.ContainsKey(context.designator().GetText()))
                 {
@@ -688,7 +610,7 @@ namespace MiniCSharp.ANTLR4
                 currentIL.Emit(OpCodes.Sub);
                 if (buscarVariableGlobal(context.designator().GetText()) != null)
                 {
-                    currentIL.Emit(OpCodes.Stsfld,buscarVariableGlobal(context.designator().GetText())); //TODO: e debe utilizar el índice que corresponde a la variable y no 0 siempre
+                    currentIL.Emit(OpCodes.Stsfld,buscarVariableGlobal(context.designator().GetText()));
                 }
                 else if (variablesLocales.ContainsKey(context.designator().GetText()))
                 {
@@ -716,16 +638,14 @@ namespace MiniCSharp.ANTLR4
         {
             Visit(context.condition());
             
-            //definir etiqueta
             ILGenerator currentIL = currentMethodBldr.GetILGenerator();
             Label labelFalse = currentIL.DefineLabel();
             Label labelEnd = currentIL.DefineLabel();
-            //saltar if false
+
             currentIL.Emit(OpCodes.Brfalse,labelFalse);
 
             Visit(context.statement(0));
             
-            //marcar etiqueta
             currentIL.Emit(OpCodes.Br, labelEnd);
             currentIL.MarkLabel(labelFalse);
             if (context.ELSE() != null)
@@ -738,33 +658,25 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitForStatementAST(MiniCSharpParser.ForStatementASTContext context)
         {
-            // Generar la etiqueta de inicio del bucle
             ILGenerator currentIL = currentMethodBldr.GetILGenerator();
-            // Generar las etiquetas del bucle
+
             currentIL = currentMethodBldr.GetILGenerator();
             Label loopStartLabel = currentIL.DefineLabel();
             loopExitLabel = currentIL.DefineLabel();
-
-            // Marcar el inicio del bucle
+            
             currentIL.MarkLabel(loopStartLabel);
-
-            // Visitar la expresión del bucle
+            
             Visit(context.condition());
             Visit(context.statement(0));
-
-            // Salto condicional al punto de salida del bucle si la expresión es falsa
+            
             currentIL.Emit(OpCodes.Brfalse, loopExitLabel);
-
-            // Generar una etiqueta para el punto de salida del bucle
-            Label breakLabel = loopExitLabel; // Establecer la etiqueta del break
-
-            // Visitar el cuerpo del bucle
+            
+            Label breakLabel = loopExitLabel;
+            
             Visit(context.statement(1));
-
-            // Salto incondicional al inicio del bucle
+            
             currentIL.Emit(OpCodes.Br, loopStartLabel);
-
-            // Marcar el punto de salida del bucle
+            
             currentIL.MarkLabel(loopExitLabel);
 
             return null;
@@ -772,27 +684,20 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitWhileStatementAST(MiniCSharpParser.WhileStatementASTContext context)
         {
-            // Generar la etiqueta de inicio del bucle
             ILGenerator currentIL = currentMethodBldr.GetILGenerator();
             Label loopStartLabel = currentIL.DefineLabel();
             loopExitLabel = currentIL.DefineLabel();
-
-            // Marcar el inicio del bucle
+            
             currentIL.MarkLabel(loopStartLabel);
-
-            // Visitar la expresión del bucle
+            
             Visit(context.condition());
-
-            // Salto condicional al punto de salida del bucle si la expresión es falsa
+            
             currentIL.Emit(OpCodes.Brfalse, loopExitLabel);
-
-            // Visitar el cuerpo del bucle
+            
             Visit(context.statement());
-
-            // Salto incondicional al inicio del bucle
+            
             currentIL.Emit(OpCodes.Br, loopStartLabel);
-
-            // Marcar el punto de salida del bucle
+            
             currentIL.MarkLabel(loopExitLabel);
 
             return null;
@@ -801,19 +706,14 @@ namespace MiniCSharp.ANTLR4
         public override object VisitBreakStatementAST(MiniCSharpParser.BreakStatementASTContext context)
         {
             ILGenerator currentIL = currentMethodBldr.GetILGenerator();
-
-            // Generar una instrucción de salto incondicional para salir del bucle
-            currentIL.Emit(OpCodes.Br, loopExitLabel); // breakLabel es una Label previamente definida
+            
+            currentIL.Emit(OpCodes.Br, loopExitLabel);
             return null;
         }
 
         public override object VisitReturnStatementAST(MiniCSharpParser.ReturnStatementASTContext context)
         {
             ILGenerator currentIL = currentMethodBldr.GetILGenerator();
-            //IL_0001: ldstr        "a"
-            //IL_0006: stloc.0      // V_0
-            //IL_0007: br.s         IL_0009
-            ///PENSAR
             if (context.expr() != null)
             {
                 Visit(context.expr());
@@ -831,33 +731,25 @@ namespace MiniCSharp.ANTLR4
         public override object VisitWriteStatementAST(MiniCSharpParser.WriteStatementASTContext context)
         {
             ILGenerator currentIL = currentMethodBldr.GetILGenerator();
-            
-            // se debe visitar a los parámetros reales para generar el código que corresponda
+
             Type tipo = (Type)Visit(context.expr());
 
             if (tipo == typeof(int))
             {
-                //TODO: debe conocerse el tipo de la expresión para saber a cual write llamar
-                currentIL.EmitCall(OpCodes.Call, writeInt/*OJO... EL QUE CORRESPONDA SEGUN TIPO*/, null); 
+                currentIL.EmitCall(OpCodes.Call, writeInt, null); 
             }else if (tipo == typeof(double))
             {
-                currentIL.EmitCall(OpCodes.Call, writeDouble/*OJO... EL QUE CORRESPONDA SEGUN TIPO*/, null); 
+                currentIL.EmitCall(OpCodes.Call, writeDouble, null); 
             }else if (tipo == typeof(char))
             {
-                currentIL.EmitCall(OpCodes.Call, writeChar/*OJO... EL QUE CORRESPONDA SEGUN TIPO*/, null); 
+                currentIL.EmitCall(OpCodes.Call, writeChar, null); 
             }else if (tipo == typeof(string))
             {
-                currentIL.EmitCall(OpCodes.Call, writeString/*OJO... EL QUE CORRESPONDA SEGUN TIPO*/, null); 
+                currentIL.EmitCall(OpCodes.Call, writeString, null); 
             }else if (tipo == typeof(bool))
             {
-                currentIL.EmitCall(OpCodes.Call, writeBool/*OJO... EL QUE CORRESPONDA SEGUN TIPO*/, null); 
+                currentIL.EmitCall(OpCodes.Call, writeBool, null); 
             }
-            //Visit(context.expr());
-            
-            //if (context.COMMA() != null)
-            //{
-               ///PENSAR
-            //}
             return null;
         }
 
@@ -901,7 +793,6 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitActParsAST(MiniCSharpParser.ActParsASTContext context)
         {
-            //MessageBox.Show(tiposMetodos[0].Count().ToString());
             for (int i = 0; context.expr().Count() > i; i++)
             {
                 Visit(context.expr(i));
@@ -912,26 +803,16 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitConditionAST(MiniCSharpParser.ConditionASTContext context)
         {
-            //ILGenerator currentIL = currentMethodBldr.GetILGenerator();
-            //List<Label> labels = new List<Label>();
             for (int i = 0; i < context.condTerm().Length; i++)
             {
                 
                 Visit(context.condTerm(i));
-                //Label labelFalse = currentIL.DefineLabel();
-                //Label labelEnd = currentIL.DefineLabel();
-                //Label label = currentIL.DefineLabel();
-                //currentIL.Emit(OpCodes.Br, labelEnd);
-                //currentIL.MarkLabel(labelEnd);
-                //labelIf.Add(label);
             }
             return null;
         }
 
         public override object VisitCondTermAST(MiniCSharpParser.CondTermASTContext context)
         {
-            //Visit(context.condFact(0));
-            
             for (int i = 0; context.condFact().Count() > i; i++)
             {
                 Visit(context.condFact(i));
@@ -1006,7 +887,6 @@ namespace MiniCSharp.ANTLR4
 
             if (context.LPAREN() != null)
             {
-                //Visit(context.actPars());
                 ILGenerator currentIL = currentMethodBldr.GetILGenerator();
                 if(!context.designator().GetText().Equals("Main"))
                 {
@@ -1014,7 +894,6 @@ namespace MiniCSharp.ANTLR4
                     {
                         Visit(context.actPars());
                     }
-                    //se busca el método en la lista de métodos globales para referenciarlo
                     currentIL.Emit(OpCodes.Call, buscarMetodo(context.designator().GetText()));
 
                     tipo = buscarMetodo(context.designator().GetText()).ReturnType;
@@ -1138,10 +1017,8 @@ namespace MiniCSharp.ANTLR4
             ILGenerator currentIL = currentMethodBldr.GetILGenerator();
             Type classType = buscarClase(context.IDENTIFIER().GetText());
             ConstructorInfo constructor = classType.GetConstructor(Type.EmptyTypes);
-            //MessageBox.Show(constructor.ToString());
-            // Generar el código IL para crear la instancia utilizando el constructor
+
             currentIL.Emit(OpCodes.Newobj, constructor);
-            //currentIL.Emit(OpCodes.Newobj, buscarClase(context.IDENTIFIER().GetText()).GetType());
             className = classType.ToString();
             if (context.LBRACK() != null)
             {
@@ -1169,15 +1046,14 @@ namespace MiniCSharp.ANTLR4
                     currentIL.Emit(OpCodes.Ldnull);
                 }else if (buscarVariableGlobal(context.IDENTIFIER(0).GetText()) != null)
                 {
-                    //MessageBox.Show(buscarVariableGlobal(context.IDENTIFIER(0).GetText()).FieldType.ToString());
                     ILGenerator currentIL = currentMethodBldr.GetILGenerator();
                     if (isArgument)
                     {
-                        currentIL.Emit(OpCodes.Ldsfld, buscarVariableGlobal(context.IDENTIFIER(0).GetText())); //no siempre será 0
+                        currentIL.Emit(OpCodes.Ldsfld, buscarVariableGlobal(context.IDENTIFIER(0).GetText()));
                     }
                     else
                     {
-                        currentIL.Emit(OpCodes.Ldsfld, buscarVariableGlobal(context.IDENTIFIER(0).GetText())); //no siempre será 0
+                        currentIL.Emit(OpCodes.Ldsfld, buscarVariableGlobal(context.IDENTIFIER(0).GetText()));
                     }
 
                     tipo = buscarVariableGlobal(context.IDENTIFIER(0).GetText()).FieldType;
@@ -1215,7 +1091,7 @@ namespace MiniCSharp.ANTLR4
 
                     if (inAssign.Equals(false))
                     {
-                        currentIL.Emit(OpCodes.Ldfld, buscarClase(listaInstancia[indice].Clase).GetField(context.IDENTIFIER(1).GetText())); //no siempre será 0
+                        currentIL.Emit(OpCodes.Ldfld, buscarClase(listaInstancia[indice].Clase).GetField(context.IDENTIFIER(1).GetText()));
                     }
                 }
                 tipo = buscarClase(listaInstancia[indice].Clase).GetField(context.IDENTIFIER(1).GetText()).FieldType;
