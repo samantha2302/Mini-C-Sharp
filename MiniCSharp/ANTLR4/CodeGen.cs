@@ -33,6 +33,7 @@ namespace MiniCSharp.ANTLR4
         private List<MethodBuilder> metodosGlobales; 
         
         private List<FieldBuilder> variablesGlobales; 
+        private List<FieldBuilder> variablesClase; 
 
         private bool isArgument = false;
         
@@ -60,18 +61,22 @@ namespace MiniCSharp.ANTLR4
         
         private Label loopExitLabel;
 
-        private List<TypeBuilder> clasesGlobales;
+        private List<Type> clasesGlobales;
         
         private ModuleBuilder currentModuleBldr;
         
         private bool inClass=false;
+
+        private bool inClassVar = false;
 
         public CodeGen(string txt)
         {
             variablesLocales = new Dictionary<string, LocalBuilder>();
             metodosGlobales = new List<MethodBuilder>();
             variablesGlobales = new List<FieldBuilder>();
-
+            clasesGlobales = new List<Type>();
+            variablesClase= new List<FieldBuilder>();
+            
             myAsmName.Name = txt;
             myAsmBldr = currentDom.DefineDynamicAssembly(myAsmName, AssemblyBuilderAccess.RunAndSave);
             myModuleBldr = myAsmBldr.DefineDynamicModule(asmFileName);
@@ -149,9 +154,20 @@ namespace MiniCSharp.ANTLR4
             return null;
         }
         
-        private TypeBuilder buscarClase(String name)
+        private Type buscarClase(String name)
         {
             foreach (var classN in clasesGlobales)
+            {
+                if (classN.Name.Equals(name))
+                    return classN;
+            }
+
+            return null;
+        }
+        
+        private FieldBuilder buscarVariableClase(String name)
+        {
+            foreach (var classN in variablesClase)
             {
                 if (classN.Name.Equals(name))
                     return classN;
@@ -345,8 +361,22 @@ namespace MiniCSharp.ANTLR4
             
             //currentIL.DeclareLocal(verificarTipoRetorno((string) Visit(context.type())));
             //currentIL.DeclareLocal((Type)Visit(context.type()));
+            if (inClass.Equals(true))
+            {
+                for (int i = 0; i < context.IDENTIFIER().Length; i++)
+                {
+                    string variableName = context.IDENTIFIER(i).GetText();
+                    Type variableType = verificarTipoRetorno((string)Visit(context.type()));
+
+                    FieldBuilder fieldBuilder = classBuilder.DefineField(variableName, variableType, FieldAttributes.Public);
+
+                    // Puedes realizar otras acciones con el fieldBuilder según sea necesario
+
+                    variablesClase.Add(fieldBuilder);
+                }
+            }
             
-            if (nivelActual == 0)
+            else if (nivelActual == 0)
             {
                 //ILGenerator currentIL = pointMainBldr.GetILGenerator();
                 for (int i = 0; context.IDENTIFIER().Count() > i; i++)
@@ -379,17 +409,16 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitClassDeclAST(MiniCSharpParser.ClassDeclASTContext context)
         {
-            
-            TypeBuilder classBuilder = currentModuleBldr.DefineType(context.IDENTIFIER().GetText(), TypeAttributes.Public | TypeAttributes.Class);
-
-            //currentModuleBldr = myModuleBldr.DefineType(context.IDENTIFIER().GetText(), TypeAttributes.Public | TypeAttributes.Class);
-
-            //for (int i = 0; context.varDecl().Count() > i; i++)
-            //{
-                //Visit(context.varDecl(i));
-           // }
-           
-           clasesGlobales.Add(classBuilder);
+            inClass = true;
+            classBuilder = myModuleBldr.DefineType(context.IDENTIFIER().GetText(), TypeAttributes.Public);
+            for (int i = 0; context.varDecl().Count() > i; i++)
+            {
+                Visit(context.varDecl(i));
+            }
+            Type generatedType = classBuilder.CreateType();
+            clasesGlobales.Add(generatedType);
+            //MessageBox.Show(buscarClase(context.IDENTIFIER().GetText()).GetField("pos").FieldType.ToString());
+            inClass = false;
             return null;
         }
 
@@ -431,7 +460,7 @@ namespace MiniCSharp.ANTLR4
 
             //Se agrega el método recién creado a la lista de mpetodos globales para no perder su referencia cuando se creen más métodos
             metodosGlobales.Add(currentMethodBldr);
-
+            
             if (context.IDENTIFIER().GetText().Equals("Main")) {
                 //el puntero al metodo principal se setea cuando es el Main quien se declara
                 pointMainBldr = currentMethodBldr;
@@ -532,7 +561,7 @@ namespace MiniCSharp.ANTLR4
                         tipoDesignator = typeof(double?);
                     }
                 }
-                else
+                else if (variablesLocales[context.designator().GetText()] != null)
                 {
                     if (variablesLocales[context.designator().GetText()].LocalType == typeof(double))
                     {
@@ -546,14 +575,13 @@ namespace MiniCSharp.ANTLR4
                 tipoDesignator = null;
                 entradaMethod = false;
                 entradaMethodNull = false;
-                //se asigna el valor a la variable
-                //TODO hay que discriminar si es local o global porque la instrucción a generar es distinta según el caso
+
                 ILGenerator currentIL = currentMethodBldr.GetILGenerator();
                 if (buscarVariableGlobal(context.designator().GetText()) != null)
                 {
                     currentIL.Emit(OpCodes.Stsfld,buscarVariableGlobal(context.designator().GetText())); //TODO: e debe utilizar el índice que corresponde a la variable y no 0 siempre
                 }
-                else
+                else if(variablesLocales[context.designator().GetText()]!= null)
                 {
                     currentIL.Emit(OpCodes.Stloc,variablesLocales[context.designator().GetText()]);
                     //MessageBox.Show(variablesLocales[context.designator().GetText()].LocalType.Name);
@@ -579,6 +607,7 @@ namespace MiniCSharp.ANTLR4
             }else if (context.INCREMENT() != null)
             {
                 ILGenerator currentIL = currentMethodBldr.GetILGenerator();
+                inClassVar = true;
                 Visit(context.designator());
                 currentIL.Emit(OpCodes.Ldc_R8 , 1.0);
                 currentIL.Emit(OpCodes.Add);
@@ -588,13 +617,16 @@ namespace MiniCSharp.ANTLR4
                 }
                 else
                 {
-                    currentIL.Emit(OpCodes.Stloc,variablesLocales[context.designator().GetText()]);
+                    //currentIL.Emit(OpCodes.Stloc,variablesLocales[context.designator().GetText()]);
+                    currentIL.Emit(OpCodes.Stfld,buscarClase("miclase").GetField("neg"));
                 }
-                
-                
+
+                inClassVar = false;
+
             }else if (context.DECREMENT() != null)
             {
                 ILGenerator currentIL = currentMethodBldr.GetILGenerator();
+                inClassVar = true;
                 Visit(context.designator());
                 currentIL.Emit(OpCodes.Ldc_R8 , 1.0);
                 currentIL.Emit(OpCodes.Sub);
@@ -606,6 +638,7 @@ namespace MiniCSharp.ANTLR4
                 {
                     currentIL.Emit(OpCodes.Stloc,variablesLocales[context.designator().GetText()]);
                 }
+                inClassVar = false;
             }
 
             return null;
@@ -1106,7 +1139,14 @@ namespace MiniCSharp.ANTLR4
 
         public override object VisitNewFactorAST(MiniCSharpParser.NewFactorASTContext context)
         {
-            ///PENSAR
+            ILGenerator currentIL = currentMethodBldr.GetILGenerator();
+            Type classType = buscarClase(context.IDENTIFIER().GetText());
+            ConstructorInfo constructor = classType.GetConstructor(Type.EmptyTypes);
+            //MessageBox.Show(constructor.ToString());
+            // Generar el código IL para crear la instancia utilizando el constructor
+            currentIL.Emit(OpCodes.Newobj, constructor);
+            //currentIL.Emit(OpCodes.Newobj, buscarClase(context.IDENTIFIER().GetText()).GetType());
+            
             
             if (context.LBRACK() != null)
             {
@@ -1163,31 +1203,48 @@ namespace MiniCSharp.ANTLR4
             }
             if (context.DOT(0) != null)
             {
-                ///
+                if (buscarVariableGlobal(context.IDENTIFIER(0).GetText()) != null)
+                {
+                    //MessageBox.Show(buscarVariableGlobal(context.IDENTIFIER(0).GetText()).FieldType.ToString());
+                    ILGenerator currentIL = currentMethodBldr.GetILGenerator();
+                    if (isArgument)
+                    {
+                        currentIL.Emit(OpCodes.Ldsfld, buscarVariableGlobal(context.IDENTIFIER(0).GetText())); //no siempre será 0
+                    }
+                    else
+                    {
+                        currentIL.Emit(OpCodes.Ldsfld, buscarVariableGlobal(context.IDENTIFIER(0).GetText())); //no siempre será 0
+                    }
+
+                    tipo = buscarVariableGlobal(context.IDENTIFIER(0).GetText()).FieldType;
+                }
+                else
+                {
+                    ILGenerator currentIL = currentMethodBldr.GetILGenerator();
+                    if (isArgument)
+                    {
+                        currentIL.Emit(OpCodes.Ldarg, variablesLocales[context.IDENTIFIER(0).GetText()]);
+                    }
+                    else
+                    {
+                        currentIL.Emit(OpCodes.Ldloc, variablesLocales[context.IDENTIFIER(0).GetText()]);
+
+                        if (inClassVar.Equals(true))
+                        {
+                            currentIL.Emit(OpCodes.Dup);
+                        }
+
+                        //currentIL.Emit(OpCodes.Ldfld, buscarClase(context.IDENTIFIER(0).GetText()).GetField("pos").FieldType.ToString());
+                        currentIL.Emit(OpCodes.Ldfld, buscarClase("miclase").GetField(context.IDENTIFIER(1).GetText())); //no siempre será 0
+                    }
+                    tipo = buscarClase("miclase").GetField(context.IDENTIFIER(1).GetText()).FieldType;
+                }
             }
             
             for (int i = 0; context.expr().Count() > i; i++)
             {
                 Visit(context.expr(i));
             }
-            
-            /*
-            for (int p = laTabla.buscarNivelMetodo(); laTabla.obtenerNivelActual() > p; p++)
-            {
-                if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), p) != -1)
-                {
-                    nivel = p;
-                    break;
-                }
-            }
-                    
-            if (nivel !=-1)
-            {
-                i = laTabla.buscarToken(context.IDENTIFIER(0).GetText(), nivel);
-                result = i.GetType();
-            }
-            */
-            
             return tipo;
         }
 

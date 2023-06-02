@@ -16,17 +16,20 @@ class prueba
       return 1;
     }
     
-        double? pruebat(double z){
-        if(z ==1){return 2;}
-          z=z+1;
-          write(z);
-          return 1;
-        }
-        
     class miclase {
-        int pos;
+        string pos;
         int neg;
+        int xd;
     }
+    
+    double? pruebat(double z){
+      z=z+1;
+      write(z);
+      inst jk;
+      jk=new miclase;
+      return jk.neg;
+    }
+            
   
     void Main ()
     {
@@ -34,5 +37,13 @@ class prueba
       double z;
       double? dxd;
       inst kl;
+      inst xd;
+      kl=new miclase;
+      xd= new miclase;
+      
+      kl.neg++;
+      xd.neg++;
+      write(kl.neg);
+      write(xd.neg);
     }
 }

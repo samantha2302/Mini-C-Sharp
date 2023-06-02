@@ -222,6 +222,12 @@ namespace MiniCSharp.ANTLR4
                     return null;
                 }
 
+                if (laTabla.obtenerNivelActual() == 0 && idType == 14)
+                {
+                    errorMsgs.Add("\n" + "Error de variable, variable \"" + context.IDENTIFIER(0).GetText() + "\" no puede utilizar el tipo \"" + showType(14) + "\" como variable global." + showErrorPosition(context.IDENTIFIER(0).Symbol));
+                    return null;
+                }
+
                 if (laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), laTabla.obtenerNivelActual()) == -1 && laTabla.buscarNivel(context.IDENTIFIER(0).GetText(), 0) == -1)
                 {
                     int verificar = -1;
