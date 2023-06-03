@@ -23,6 +23,9 @@ class prueba
     }
     
     double? pruebat(double z){
+      double? dxd;
+      dxd=1;
+      write(dxd);
       z=z+1;
       write(z);
       inst jk;
@@ -43,11 +46,15 @@ class prueba
     {
       int p;
       double z;
-      double? dxd;
+      double dxd;
       inst kl;
       inst xd;
       kl=new miclase;
       xd= new miclasedos;
+      
+      if(){
+      
+      }
       
       kl.neg=1000;
       kl.neg=kl.neg+1000;
@@ -57,6 +64,8 @@ class prueba
       write(kl.neg);
       write(xd.per);
       write(pruebat(kl.neg+100));
+      dxd=1+dxd;
+      write(dxd);
       //write(1+resul(1.25, 2,3)+result(1, 1,1)+1);
     }
 }
