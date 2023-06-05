@@ -1,71 +1,28 @@
-using otraClase;
-using otraClase1;
-
-class prueba
+class PitagorasCalculator
 {
-      int x,y;
-  double resul(double z, int a,int p){
-    z=z+1;
-    write(z);
-    return 1;
-  }
-  
-    int result(double z, int a,int p){
-      z=z+1;
-      write(z);
-      return 1;
-    }
-    
-    class miclase {
-        string pos;
-        int neg;
-        int xd;
-    }
-    
-    double? pruebat(double z){
-      double? dxd;
-      dxd=1;
-      write(dxd);
-      z=z+1;
-      write(z);
-      inst jk;
-      jk=new miclase;
-      jk.neg++;
-      jk.neg++;
-      jk.neg++;
-      return jk.neg;
-    }
-    
-        class miclasedos {
-            int per;
-            string pers;
-        }
-            
-  
-    void Main ()
+    double CalcularHipotenusa(double cateto1, double cateto2)
     {
-      int p;
-      double z;
-      double dxd;
-      inst kl;
-      inst xd;
-      kl=new miclase;
-      xd= new miclasedos;
-      
-      if(){
-      
-      }
-      
-      kl.neg=1000;
-      kl.neg=kl.neg+1000;
-      xd.pers="hola";
-      //kl.neg++;
-      write(xd.pers);
-      write(kl.neg);
-      write(xd.per);
-      write(pruebat(kl.neg+100));
-      dxd=1+dxd;
-      write(dxd);
-      //write(1+resul(1.25, 2,3)+result(1, 1,1)+1);
+        double hipotenusa; 
+        hipotenusa= (cateto1 * cateto1) + (cateto2 * cateto2);
+
+        return hipotenusa;
     }
+    
+        void Main()
+        {
+            double cateto1;
+            cateto1 = 3;
+    
+            double cateto2; 
+            cateto2 = 4;
+    
+            write("calcular la hipotenusa de un triangulo utilizando el teorema de Pitagoras");
+            
+            double hipotenusa;
+            hipotenusa = CalcularHipotenusa(cateto1, cateto2);
+    
+            write(hipotenusa);
+        }
 }
+
+

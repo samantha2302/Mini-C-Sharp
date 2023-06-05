@@ -18,8 +18,8 @@ namespace MiniCSharp
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            //Application.Run(new FormTabs());
-            Application.Run(new Prueba());
+            Application.Run(new FormTabs());
+            //Application.Run(new Prueba());
         }
     }
 }

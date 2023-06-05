@@ -1,19 +1,27 @@
-using otraClase; 
-
-class Numeros
+class PitagorasCalculator
 {
-  void Main ()
+    double CalcularHipotenusa(double cateto1, double cateto2)
     {
-     int num1, num2, num3;
-     num1 = 1.0;
-     num2 = 2.5;
-     
-     if (num1 == num2)read(num1);
-        
-     else if (num1 > num2) read(num2);
-     
-     else num3 = num1 + num2;
+        double hipotenusa; 
+        hipotenusa= (cateto1 * cateto1) + (cateto2 * cateto2);
 
+        return hipotenusa;
     }
+    
+        void Main()
+        {
+            double cateto1;
+            cateto1 = 3;
+    
+            double cateto2; 
+            cateto2 = 4;
+    
+            write("calcular la hipotenusa de un triangulo utilizando el teorema de Pitagoras");
+            
+            double hipotenusa;
+            hipotenusa = CalcularHipotenusa(cateto1, cateto2);
+    
+            write(hipotenusa);
+        }
 }
 

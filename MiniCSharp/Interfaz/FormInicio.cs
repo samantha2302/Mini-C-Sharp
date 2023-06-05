@@ -5,9 +5,11 @@ using ColorsNew;
 using FastColoredTextBoxNS;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Windows.Forms;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
@@ -483,6 +485,7 @@ namespace CNote
             MyErrorListener errorListener = null;
             MySyntaxErrorListener syntaxErrorListener = null;
             AContextual aContextual = null;
+            CodeGen codeGen = null;
             var defaultErrorStrategy = new MyDefaultErrorStrategy();
             IParseTree tree;
             try
@@ -517,13 +520,40 @@ namespace CNote
 
                 if (errorListener.hasErrors() == false && syntaxErrorListener.hasErrors() == false && aContextual.hasErrors() == false)
                 {
-                    cmdout.Text = "Compilacion exitosa\n";
+                    cmdout.Text = "";
+                    //cmdout.Text = "Compilacion exitosa\n";
                     Form form = new Form();
                     form.Text = "Arbol MiniCSharp";
                     form.Controls.Add(treeView);
                     form.Width = 400;
                     form.Height = 500;
-                    form.ShowDialog();
+                    //form.ShowDialog();
+                    
+                    codeGen = new CodeGen(currFileName);
+                    Type pointType = (Type) codeGen.Visit(tree);
+                    object ptInstance = Activator.CreateInstance(pointType, null);
+                    pointType.InvokeMember("Main",
+                        BindingFlags.InvokeMethod,
+                        null,
+                        ptInstance,
+                        new object[0]);
+
+                    Process myProcess = new Process();
+                    myProcess.StartInfo.UseShellExecute = false;
+                    myProcess.StartInfo.FileName = @"../../bin/Debug/result.exe";
+                    myProcess.StartInfo.RedirectStandardOutput = true;
+                    myProcess.Start();
+                    
+                    //MessageBox.Show(myProcess.StandardOutput.ReadToEnd());
+
+                    cmdout.Text += myProcess.StandardOutput.ReadToEnd();
+                    
+                    cmdout.Text += "\n";
+                    cmdout.Text += "\n";
+                    cmdout.Text += "\n";
+                    cmdout.Text += "Compilacion exitosa\n";
+                    
+                    myProcess.WaitForExit();
                 }
                 else
                 {

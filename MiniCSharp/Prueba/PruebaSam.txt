@@ -1,52 +1,69 @@
 ﻿using otraClase;
 using otraClase1;
 
-class P
+class prueba
 {
-    class Table {
-        int p;
-        int[] neg;
-        list<int> uwu;
+      int x,y;
+  double resul(double z, int a,int p){
+    z=z+1;
+    write(z);
+    return 1;
+  }
+  
+    int result(double z, int a,int p){
+      z=z+1;
+      write(z);
+      return 1;
     }
     
-    //class Table {
-        //int[] pos;
-        //int[] neg;
-    //}
-     //int x, i;
-     int m;
-     int p;
-     
-   int pruebay (char x, double b)
-     {
-        int o;
-        return o;
-        {
-            return 1;
+    class miclase {
+        string pos;
+        int neg;
+        int xd;
+    }
+    
+    double? pruebat(double z){
+      double? dxd;
+      dxd=1;
+      write(dxd);
+      z=z+1;
+      write(z);
+      inst jk;
+      jk=new miclase;
+      jk.neg++;
+      jk.neg++;
+      jk.neg++;
+      return jk.neg;
+    }
+    
+        class miclasedos {
+            int per;
+            string pers;
         }
-        
-     }
- class prueba {
-     int p;
-     inst lk;
-     int[] neg;
-     list<int> uwu;
- }
-  int Main ()
+            
+  
+    void Main ()
     {
-        int x, i;
-        inst jk;
-        int? o;
-        list<string> uwu;
-        pruebay(1,"a");
-        
-        x=1;
-        
-        del(uwu,1);
-       
-        x= del(uwu,"a");
-        
-        bool m;
-        
+      int p;
+      double z;
+      double dxd;
+      inst kl;
+      inst xd;
+      kl=new miclase;
+      xd= new miclasedos;
+      
+      for(z; z<3; z++;){write(z);}
+      
+      kl.neg=1000;
+      kl.neg=kl.neg+1000;
+      xd.pers="hola";
+      //kl.neg++;
+      write(xd.pers);
+      write(kl.neg);
+      write(xd.per);
+      write(pruebat(kl.neg+100));
+      dxd=1+dxd;
+      write(dxd);
+      //write(1+resul(1.25, 2,3)+result(1, 1,1)+1);
     }
 }
